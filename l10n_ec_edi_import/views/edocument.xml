@@ -1,0 +1,608 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+
+
+
+        <record model="ir.ui.view" id="electronic_document_pivot">
+            <field name="name">edocument.pivot</field>
+            <field name="model">edocument</field>
+            <field name="arch" type="xml">
+                <pivot string="Documentos Electronicos RIDE" display_quantity="1" sample="1">
+                    <field name="partner_id" type="row"/>
+                    <field name="amount_total" type="measure"/>
+                </pivot>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="electronic_document_graph">
+            <field name="name">edocument.graph</field>
+            <field name="model">edocument</field>
+            <field name="arch" type="xml">
+                <graph string="Documentos Electronicos RIDE" sample="1">
+                    <field name="partner_id"/>
+                    <field name="amount_total" type="measure"/>
+                </graph>
+            </field>
+        </record>
+
+
+        <record id="electronic_document_view_tree" model="ir.ui.view">
+            <field name="name">edocument.view.list</field>
+            <field name="model">edocument</field>
+            <field name="arch" type="xml">
+                <list decoration-muted="state == 'cancel'"
+                    string="Documentos Electronicos RIDE"
+                    class="o_purchase_order"
+                    sample="1">
+                    <header>
+                        <button name="button_cancel" type="object" string="Cancel"
+                            confirm="Are you sure you want to cancel the selected RFQs/Orders?"/>
+                    </header>
+                    <field name="priority" optional="show" widget="priority" nolabel="1"/>
+                    <field name="partner_id" string="Proveedor"/>
+                    <field name="partner_ref" string="Numero Documento"/>
+                    <field name="fecha_emision" string="Fecha Documento"/>
+                    <field name="name" string="Autorizacion" readonly="1" decoration-bf="1" decoration-info="state in ('draft','sent')"/>
+                    <field name="l10n_ec_authorization_date" string="Fecha Autorizacion" optional="show"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <field name="company_id" groups="!base.group_multi_company" column_invisible="True" readonly="state in ['cancel', 'done', 'purchase']"/>
+                    <!-- <field name="origin" optional="show"/> -->
+                    <field name="amount_untaxed" sum="Total" string="Subtotal" widget="monetary" optional="hide"/>
+
+                    <field name="amount_tax" sum="Total" string="Impuestos" widget="monetary" optional="show" decoration-bf="1"/>
+                    <field name="amount_total" sum="Total" string="Total" widget="monetary" optional="show" decoration-bf="1"/>
+                    <field name="currency_id" column_invisible="True" />
+                    <field name="state" optional="show" widget="badge" decoration-success="state == 'purchase' or state == 'invoice'"
+                        decoration-warning="state == 'cancel'" decoration-info="state == 'draft' or state == 'sent'"/>
+
+                    <!-- <field name="amount_total_cc" sum="Total amount" widget="monetary" optional="hide"/> -->
+                    <field name="company_currency_id" column_invisible="True"/>
+                    <field name="user_id" string="Usuario" widget="many2one_avatar_user" optional="show"/>
+
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_purchase_edocument_list">
+            <field name="name">Compras</field>
+            <field name="res_model">purchase.order</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('edocument_id','=',active_id)]</field>
+            <field name="context">{
+                "default_edocument_id":active_id,
+                }
+            </field>
+        </record>
+
+        <record id="electronic_document_form" model="ir.ui.view">
+            <field name="name">edocument.form</field>
+            <field name="model">edocument</field>
+            <field name="arch" type="xml">
+                <form string="Documentos Electronicos RIDE" class="o_purchase_order">
+                <header>
+                    <button name="button_load"
+                            string="Cargar"
+                            type="object"
+                            class="oe_highlight"
+                            data-hotkey="d"
+                            invisible="state not in ('draft','sent') or order_count > 0"/>
+
+                    <button name="mapear_lineas_xml"
+                            string="Homologar"
+                            type="object"
+                            class="oe_highlight"
+                            ata-hotkey="h"
+                            invisible="(state != 'draft') or (lines_no_vinculadas_count &lt; 0) or (lines_no_products_count &lt;= 0)"/>
+
+                    <button name="button_draft"
+                            string="Crear Factura"
+                            type="object"
+                            class="oe_highlight"
+                            data-hotkey="f"
+                            invisible="products_to_map_count != 0 or services_to_map_count &lt;= 0 or state != 'sent'"/>
+
+                    <button name="button_cancel"
+                            invisible="state !='sent'"
+                            string="Cancelar"
+                            type="object" data-hotkey="x" />
+
+
+                    <field name="state" widget="statusbar" statusbar_visible="draft,sent,purchase,invoice,cancel" readonly="1"/>
+                </header>
+                <sheet>
+                  <div class="oe_button_box" name="button_box">
+                      <button name="action_create_orden_compra"
+                              string="Crear Orden"
+                              type="object"
+                              class="oe_stat_button"
+                              data-hotkey="o"
+                              icon="fa-list-alt"
+                              invisible="products_to_map_count &lt;= 0 or order_count &gt; 0"/>
+                      <button name="action_view_orden_compra"
+                              string="Ver Orden"
+                              type="object"
+                              class="oe_stat_button"
+                              data-hotkey="v"
+                              icon="fa-list-alt"
+                              invisible="order_count != 1 or state == 'draft'">
+                            </button>
+
+                      <button name="action_view_factura_compra"
+                              string="Ver Factura"
+                              type="object"
+                              class="oe_stat_button"
+                              data-hotkey="f"
+                              icon="fa-list-alt"
+                              invisible="invoice_count != 1 or state == 'draft'">
+                              <!-- <field name="order_count" widget="statinfo" string="Ver Orden"/> -->
+                      </button>
+
+
+                  </div>
+
+                  <div class="d-flex justify-content-between align-items-center w-100">
+                      <div class="w-50">
+                          <!-- <label class="o_form_label">RIDE Documento Electrónico</label> -->
+                          <div class="o_form_label">RIDE Documento Electrónico</div>
+
+                          <h2 class="d-flex align-items-center">
+                              <field name="priority" widget="priority" class="me-3"/>
+                              <field name="name" class="flex-grow-1" style="width: 100%;" readonly="state in ['sent','cancel', 'invoice', 'purchase']"/>
+                          </h2>
+                      </div>
+                      <div class="w-20">
+                          <!-- <label class="o_form_label">Nro Documento</label> -->
+                          <div class="o_form_label">Nro Documento</div>
+
+                          <h2 class="d-flex align-items-center">
+                          <field name="partner_ref"  readonly="1"/>
+                        </h2>
+                      </div>
+                      <div class="w-10">
+                        <div class="o_form_label ms-4">Fecha del Documento</div>
+
+                        <!-- <label class="o_form_label">Fecha</label> -->
+                        <h3 class="d-flex align-items-center">
+                          <field name="fecha_emision"  readonly="1"/>
+                        </h3>
+                      </div>
+                      <div class="w-10">
+                        <div class="o_form_label"><field name="estado_sri"  readonly="1"/></div>
+                        <h3 class="d-flex align-items-center">
+                          <field name="l10n_ec_authorization_date"  readonly="1"/>
+                        </h3>
+                      </div>
+                </div>
+                        <group>
+                            <field name="partner_id" widget="res_partner_many2one" context="{'res_partner_search_mode': 'supplier', 'show_vat': True}"
+                             readonly="state in ['sent','cancel', 'done', 'purchase']"/>
+                             <field name="email" readonly="state in ['sent','cancel', 'invoice', 'purchase']"/>
+
+                            <!-- <field name="partner_ref" readonly="state in ['sent','cancel', 'invoice', 'purchase']"/> -->
+                            <field name="currency_id" groups="base.group_multi_currency" force_save="1" readonly="state in ['cancel', 'done', 'purchase']"/>
+                            <field name="id" invisible="1"/>
+                            <field name="company_id" invisible="1" readonly="state in ['cancel', 'done', 'purchase']"/>
+                            <field name="currency_id" invisible="1" readonly="state in ['cancel', 'done', 'purchase']" groups="!base.group_multi_currency"/>
+                            <field name="tax_calculation_rounding_method" invisible="1"/>
+                        </group>
+
+
+                    <notebook>
+                        <page string="Productos" name="products">
+                            <field name="tax_country_id" invisible="1"/>
+                            <field name="document_line"
+                                mode="list,kanban"
+                                context="{'default_state': 'draft'}"
+
+                                readonly="state in ('invoice','purchase', 'cancel')">
+                                <list string="Lineas de Documents Electronico" editable="bottom"  delete="false"
+                                      create="false"  expand="1" >
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="crear" invisible="1" column_invisible="True"/>
+                                    <field name="tipo_homologacion" invisible="1" column_invisible="True"/>
+                                    <field name="tracking"  string="Seguimiento" optional="show"/>
+                                    <field name="product_code"/>
+
+                                    <field name="unificar" optional="show" string="Unificar"/>
+                                    <field name="distribuir" optional="show"  string="Distribuir" invisible="1" column_invisible="True"/>
+                                    <field name="distribuir_code" optional="show"  string="Codigo Distribuir" column_invisible="False"/>
+
+
+                                    <field name="tax_calculation_rounding_method" column_invisible="True"/>
+                                    <field name="company_id" column_invisible="True"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="state" column_invisible="True"/>
+                                    <field name="product_name"/>
+                                    <field name="product_qty" sum="Total"/>
+                                    <field name="product_uom"
+                                        string="UdM"
+                                        domain="[('id','in',uom_ids_allowed)]"
+                                        readonly="state in ('purchase', 'done', 'cancel')"
+                                        options="{'no_open': True}"
+                                        force_save="1" optional="show"
+                                        groups="uom.group_uom"/>
+                                    <field name="uom_ids_allowed" invisible="0" column_invisible="0"/>
+
+                                    <field name="product_packaging_qty" invisible="not product_id or not product_packaging_id" groups="product.group_stock_packaging" optional="show"/>
+                                    <field name="product_packaging_id" invisible="not product_id" context="{'default_product_id': product_id, 'list_view_ref':'product.product_packaging_tree_view', 'form_view_ref':'product.product_packaging_form_view'}" groups="product.group_stock_packaging" optional="show"/>
+
+                                    <field name="price_unit" string="Costo Unitario"/>
+                                    <field name="discount" string="% Dto" avg="Total" width="50px" optional="hide"/>
+
+                                    <field name="price_init" sum="Total" />
+
+                                    <field name="taxes_id" widget="many2many_tags" domain="[('type_tax_use', '=', 'purchase'), ('company_id', 'parent_of', parent.company_id), ('country_id', '=', parent.tax_country_id), ('active', '=', True)]" context="{'default_type_tax_use': 'purchase', 'search_view_ref': 'account.account_tax_view_search'}" options="{'no_create': True}" optional="show" />
+
+                                    <field name="price_discount" sum="Total" string="Descuento"/>
+                                    <field name="price_tax" sum="Total" />
+
+                                    <field name="price_subtotal" sum="Total" string="Subtotal"/>
+                                    <field
+                                        name="product_id"
+                                        widget="product_label_section_and_note_field"
+                                        readonly="state in ('purchase', 'to approve', 'done', 'cancel')"
+                                        context="{'partner_id':parent.partner_id, 'quantity':product_qty, 'company_id': parent.company_id}"
+                                        force_save="1" domain="[('purchase_ok', '=', True)]"/>
+
+                                    <field name="type" />
+
+
+                                    <field name="categ_id"  optional="show"/>
+
+
+                                      <button name="button_crear_producto_desde_linea" string="Crear" type="object" class="o_clear_qty_buttons" icon="fa-bullseye"
+                                          invisible="product_id != False or vinculado != False"/>
+                                      <button name="button_asignar_producto_linea" string="Vincular" type="object" class="o_clear_qty_buttons" icon="fa-bullseye"
+                                          invisible="product_id == False or vinculado != False"/>
+
+
+                                </list>
+                                <form string="Lineas Documentos Electronicos RIDE">
+                                        <field name="tax_calculation_rounding_method" invisible="1"/>
+                                        <field name="state" invisible="1"/>
+                                        <field name="company_id" invisible="1"/>
+                                        <group >
+                                            <group>
+                                                <field name="product_id"
+                                                       context="{'partner_id': parent.partner_id}"
+                                                       widget="many2one_barcode"
+                                                       domain="[('purchase_ok', '=', True), '|', ('company_id', '=', False), ('company_id', '=', parent.company_id)]"
+                                                       readonly="state in ('purchase', 'to approve', 'done', 'cancel')"
+                                                />
+                                                <label for="product_qty"/>
+                                                <div class="o_row">
+                                                    <field name="product_qty"/>
+                                                    <field name="product_uom" groups="uom.group_uom" />
+                                                </div>
+                                                <field name="product_packaging_qty" invisible="not product_id or not product_packaging_id" groups="product.group_stock_packaging"/>
+                                                <field name="product_packaging_id" invisible="not product_id" context="{'default_product_id': product_id, 'list_view_ref':'product.product_packaging_tree_view', 'form_view_ref':'product.product_packaging_form_view'}" groups="product.group_stock_packaging" />
+                                                <field name="price_unit"/>
+                                                <field name="discount"/>
+                                                <field name="taxes_id" widget="many2many_tags" domain="[('type_tax_use', '=', 'purchase'), ('company_id', 'parent_of', parent.company_id), ('country_id', '=', parent.tax_country_id)]" options="{'no_create': True}"/>
+                                            </group>
+                                            <group>
+                                            <notebook colspan="4">
+                                                <page string="Notes" name="notes">
+                                                    <field name="name"/>
+                                                </page>
+                                            </notebook>
+                                            </group>
+                                        </group>
+                                </form>
+                                <kanban class="o_kanban_mobile">
+                                     <field name="tax_calculation_rounding_method"/>
+                                     <templates>
+                                         <t t-name="card">
+                                                <div class="row">
+                                                    <field name="product_id" class="fw-bold col-8"/>
+                                                    <span class="fw-bold col-4">
+                                                        Tax excl.: <field name="price_subtotal" class="float-end"/>
+                                                    </span>
+                                                </div>
+                                                <div class="row">
+                                                    <span class="col-8 text-muted">
+                                                        Cantidad:
+                                                        <field name="product_qty" />
+                                                        <field name="product_uom" groups="uom.group_uom" class="small"/>
+                                                    </span>
+                                                    <span class="fw-bold col-4" t-if="record.tax_calculation_rounding_method.raw_value === 'round_per_line'">
+                                                        Tax incl.: <field name="price_total" />
+                                                    </span>
+                                                </div>
+                                                <span class="text-muted">
+                                                    Unit Price:
+                                                    <field name="price_unit" />
+                                                </span>
+                                                <span class="text-muted" t-if="record.discount.raw_value">
+                                                    Discount: <field name="discount" />%
+                                                </span>
+                                         </t>
+                                     </templates>
+                                 </kanban>
+                            </field>
+                            <group>
+                                <group>
+                                  <field colspan="2" name="notes" nolabel="1" />
+                                  <field colspan="2" name="error" nolabel="1" />
+                                </group>
+                              <group>
+                                <group class="oe_subtotal_footer">
+                                  <field name="amount_subtotal"/>
+                                  <field name="amount_discount"/>
+                                  <field name="amount_untaxed"/>
+                                  <field name="amount_tax"/>
+                                  <field name="amount_total"/>
+                                </group>
+                                <group class="oe_subtotal_footer">
+                                  <field name="subtotal_ride"/>
+                                  <field name="total_descuento"/>
+                                  <field name="subtotal_neto"/>
+                                  <field name="total_IVA8"/>
+                                  <field name="total_IVA12"/>
+                                  <field name="total_IVA15"/>
+                                  <field name="total"/>
+                                </group>
+                              </group>
+                            </group>
+                            <div class="clearfix"/>
+                        </page>
+                        <page string="Informacion" name="electronic_document_info">
+                            <group>
+                              <group name="params_info">
+                                <field name="l10n_ec_production_env" />
+                                <field name="l10n_latam_document_type_id" invisible="1"/>
+                                <field name="tipo_importacion" invisible="1"/>
+                                  <field name="tipo_homologacion" invisible="1"/>
+                                  <field name="state_purchase_orders"/>
+                              </group>
+                                <group name="other_info">
+                                  <field name="fecha_proceso"/>
+                                  <field name="estatus_import"/>
+                                  <field name="blocking_level"/>
+                                    <field name="user_id" domain="[('share', '=', False)]" widget="many2one_avatar_user"/>
+                                    <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}" readonly="state in ['cancel', 'done', 'purchase']"/>
+                                </group>
+                                <group name="invoice_info">
+                                    <field name="payment_term_id" readonly="state == 'done'" options="{'no_create': True}"/>
+                                    <field name="fiscal_position_id" options="{'no_create': True}" readonly="state == 'done'"/>
+                                </group>
+                                <group>
+                                  <field name="products_to_map_count"/>
+                                  <field name="services_to_map_count"/>
+                                  <field name="lines_no_products_count"/>
+                                  <field name="lines_no_vinculadas_count"/>
+                                  <field name="order_count"/>
+                                  <field name="invoice_count"/>
+
+                                  <div class="o_form_label">Total RIDE</div>
+                                  <h3 class="d-flex align-items-center">
+                                    <field name="total" readonly="1"/>
+                                  </h3>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                </form>
+            </field>
+        </record>
+
+       <record id="view_electronic_document_filter" model="ir.ui.view">
+            <field name="name">request.quotation.select</field>
+            <field name="model">edocument</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Documentos Electronicos RIDE">
+                    <field name="name" string="Documento Electronico"
+                        filter_domain="['|', '|', ('name', 'ilike', self), ('partner_ref', 'ilike', self), ('partner_id', 'child_of', self)]"/>
+                    <field name="partner_id" operator="child_of"/>
+                    <field name="user_id"/>
+                    <field name="origin"/>
+                    <filter name="my_documents" string="Mis RIDEs" domain="[('user_id', '=', uid)]"/>
+                    <filter string="Prioritarias" name="starred" domain="[('priority', '=', '1')]"/>
+                    <separator/>
+                    <filter name="draft" string="Borrador" domain="[('state', '=', 'draft')]"/>
+                    <filter name="processing" string="Procesando" domain="[('state', 'in', ('sent'))]"/>
+                    <filter name="done" string="Procesadas" domain="[('state', 'in', ('purchase','invoice'))]"/>
+                    <filter name="canceled" string="Canceladas" domain="[('state', 'in', ('cancel'))]"/>
+                    <filter name="order_date" string="Fecha Documento" date="fecha_emision"/>
+                    <separator/>
+                    <group expand="0" string="Agrupar por">
+                        <filter string="Proveedor" name="proveedor" domain="[]" context="{'group_by': 'partner_id'}"/>
+                        <filter string="Por Usuario" name="representative" domain="[]" context="{'group_by': 'user_id'}"/>
+                        <filter string="Fecha Documento" name="order_date" domain="[]" context="{'group_by': 'fecha_emision'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="electronic_document_view_search" model="ir.ui.view">
+            <field name="name">edocument.select</field>
+            <field name="model">edocument</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Documentos Electronicos RIDE">
+                    <field name="name" string="Documento Electronico"
+                        filter_domain="['|', '|', ('name', 'ilike', self), ('partner_ref', 'ilike', self), ('partner_id', 'child_of', self)]"/>
+                    <field name="partner_id" operator="child_of"/>
+                    <field name="user_id"/>
+                    <filter name="my_documents" string="Mis RIDEs" domain="[('user_id', '=', uid)]"/>
+                    <filter string="Prioritarias" name="starred" domain="[('priority', '=', '1')]"/>
+                    <filter name="order_date" string="Fecha Documento" date="fecha_emision"/>
+                    <separator/>
+                    <group expand="0" string="Group By">
+                        <filter string="Proveedor" name="proveedor" domain="[]" context="{'group_by': 'partner_id'}"/>
+                        <filter string="Usuario" name="representative" domain="[]" context="{'group_by': 'user_id'}"/>
+                        <filter string="Order Date" name="Fecha Documento" domain="[]" context="{'group_by': 'fecha_emision'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+
+        <!-- Purchase Orders Kanban View  -->
+        <record model="ir.ui.view" id="view_electronic_document_kanban">
+            <field name="name">edocument.kanban</field>
+            <field name="model">edocument</field>
+            <field name="arch" type="xml">
+                <kanban class="o_kanban_mobile" js_class="purchase_dashboard_kanban" sample="1" quick_create="false">
+                    <field name="fecha_emision"/>
+                    <field name="currency_id"/>
+                    <progressbar field="activity_state" colors='{"planned": "success", "today": "warning", "overdue": "danger"}'/>
+                    <templates>
+                        <t t-name="card">
+                            <div class="d-flex align-items-baseline">
+                                <field name="priority" widget="priority" class="mt-1 me-1"/>
+                                <field name="partner_id" class="fw-bolder fs-5 me-2"/>
+                                <field name="amount_total" widget="monetary" class="fw-bolder ms-auto flex-shrink-0"/>
+                            </div>
+                            <footer class="align-items-end">
+                                <div class="d-flex flex-wrap gap-1 text-nowrap">
+                                    <field name="name"/>
+                                    <field name="fecha_emision" options="{'show_time': false}"/>
+                                </div>
+                                <field name="state" widget="label_selection" options="{'classes': {'draft': 'default', 'cancel': 'default', 'done': 'success', 'approved': 'warning'}}" class="ms-auto"/>
+                            </footer>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record id="electronic_document_view_kanban_without_dashboard" model="ir.ui.view">
+            <field name="name">edocument.view.kanban.without.dashboard</field>
+            <field name="model">edocument</field>
+            <field name="inherit_id" ref="l10n_ec_edi_import.view_electronic_document_kanban"/>
+            <field name="mode">primary</field>
+            <field name="priority">20</field>
+            <field name="arch" type="xml">
+                <xpath expr="//kanban" position="attributes">
+                    <attribute name="js_class"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- <record id="electronic_document_tree" model="ir.ui.view">
+            <field name="name">edocument.list</field>
+            <field name="model">edocument</field>
+            <field name="priority" eval="1"/>
+            <field name="arch" type="xml">
+                <list string="Documentos Electronicos RIDE"
+                      decoration-muted="state=='cancel'" sample="1">
+                    <field name="priority" optional="show" widget="priority" nolabel="1"/>
+                    <field name="partner_ref" optional="hide"/>
+                    <field name="name" string="Reference" readonly="1" decoration-info="state in ('draft','sent')"/>
+                    <field name="fecha_emision" column_invisible="not context.get('quotation_only', False)" readonly="state in ['cancel', 'done', 'purchase']" optional="show"/>
+                    <field name="l10n_ec_authorization_date" column_invisible="context.get('quotation_only', False)" optional="show"/>
+                    <field name="partner_id" readonly="1"/>
+                    <field name="company_id" readonly="1" options="{'no_create': True}"
+                        groups="base.group_multi_company" optional="show"/>
+                    <field name="user_id" optional="show"/>
+                    <field name="origin" optional="show"/>
+                    <field name="amount_untaxed" sum="Total Untaxed amount" string="Untaxed" widget="monetary" optional="hide"/>
+                    <field name="amount_total" sum="Total amount" widget="monetary" optional="show"/>
+                    <field name="currency_id" column_invisible="True" readonly="state in ['cancel', 'done', 'purchase']"/>
+                    <field name="state" optional="show"/>
+                </list>
+            </field>
+        </record> -->
+
+        <!-- Unfortunately we want the purchase kpis table to only show up in some list views,
+             so we have to duplicate code to support both view versions -->
+        <!-- <record id="electronic_document_kpis_tree" model="ir.ui.view">
+            <field name="name">edocument.inherit.edocument.list</field>
+            <field name="model">edocument</field>
+            <field name="priority" eval="10"/>
+            <field name="arch" type="xml">
+                <list string="Documentos Electronicos RIDE" decoration-info="state in ['draft', 'sent']"
+                decoration-muted="state == 'cancel'"
+                class="o_purchase_order" js_class="purchase_dashboard_list" sample="1">
+                    <header>
+                        <button name="button_cancel" type="object" string="Cancelar"
+                            confirm="Are you sure you want to cancel the selected RFQs/Orders?"/>
+                    </header>
+                    <field name="priority" string="Prioritario" optional="show" widget="priority" nolabel="1"/>
+                    <field name="partner_ref"/>
+                    <field name="fecha_emision" string="Fecha" />
+                    <field name="name" string="Autorizacion" readonly="1" decoration-bf="1"/>
+                    <field name="l10n_ec_authorization_date" string="Fecha Autorizacion" />
+                    <field name="partner_id" string="Proveedor"  readonly="1"/>
+                    <field name="company_id" readonly="1" options="{'no_create': True}"
+                        groups="base.group_multi_company" optional="show"/>
+                    <field name="company_id" groups="!base.group_multi_company" column_invisible="True" readonly="state in ['cancel', 'done', 'purchase']"/>
+                    <field name="user_id" string="Usuario"  optional="show" widget="many2one_avatar_user"/>
+                    <field name="origin" optional="show"/>
+                    <field name="amount_untaxed" sum="Total Untaxed amount" string="Untaxed" widget="monetary" optional="hide"/>
+                    <field name="amount_total" sum="Total amount" widget="monetary" optional="show" decoration-bf="state in ['purchase', 'done']"/>
+                    <field name="currency_id" column_invisible="True" readonly="state in ['cancel', 'done', 'purchase']"/>
+                    <field name="amount_total_cc" sum="Total amount" widget="monetary" optional="hide"/>
+                    <field name="company_currency_id" column_invisible="True"/>
+                    <field name="state" optional="show" widget="badge" decoration-success="state == 'purchase' or state == 'done'"
+                        decoration-warning="state == 'to approve'" decoration-info="state == 'draft' or state == 'sent'"/>
+                </list>
+            </field>
+        </record> -->
+
+
+
+        <!-- <record id="electronic_document_rfq" model="ir.actions.act_window">
+            <field name="name">Importacion de Documentos Electronicos RIDE</field>
+            <field name="path">electronicd</field>
+            <field name="res_model">edocument</field>
+            <field name="view_mode">list,kanban,form,pivot,graph</field>
+            <field name="view_id" ref="electronic_document_kpis_tree"/>
+            <field name="domain">[]</field>
+            <field name="search_view_id" ref="view_electronic_document_filter"/>
+            <field name="context">{'quotation_only': True}</field>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                No se ha encontrado ninguna solicitud de importacion de RIDEs. ¡Creemos una!
+              </p><p>
+            La importacion de Documentos Electronicos (RIDE) permite cargar la informacion desde los XML autorizados
+            en los servidores del SRI.              </p>
+            </field>
+        </record> -->
+
+
+
+
+        <record id="electronic_document_form_action" model="ir.actions.act_window">
+            <field name="name">Importacion de Documentos Electronicos RIDE</field>
+            <field name="res_model">edocument</field>
+            <field name="path">purchase-edocument</field>
+            <field name="view_mode">list,kanban,form,pivot,graph</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'list', 'view_id': ref('l10n_ec_edi_import.electronic_document_view_tree')}),
+                (0, 0, {'view_mode': 'kanban', 'view_id': ref('l10n_ec_edi_import.electronic_document_view_kanban_without_dashboard')}),
+            ]"/>
+            <!-- <field name="domain">[('state','in',('purchase', 'done'))]</field> -->
+            <field name="domain">[]</field>
+            <field name="search_view_id" ref="electronic_document_view_search"/>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                No se ha encontrado ninguna solicitud de importacion de RIDEs. ¡Creemos una!
+              </p><p>
+              La importacion de Documentos Electronicos (RIDE) permite cargar la informacion desde los XML autorizados en los servidores del SRI.
+              </p>
+            </field>
+        </record>
+
+
+        <!-- <record id="electronic_document_rfq" model="ir.actions.act_window">
+            <field name="name">Importacion de Documentos Electronicos RIDE</field>
+            <field name="res_model">edocument</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="l10n_ec_edi_import.electronic_document_form"/>
+            <field name="search_view_id" ref="view_electronic_document_filter"/>
+            <field name="target">main</field>
+        </record> -->
+
+        <menuitem action="electronic_document_form_action" id="menu_electronic_document_form_action"
+            parent="purchase.menu_procurement_management"
+            sequence="30"/>
+
+
+
+
+
+ </odoo>

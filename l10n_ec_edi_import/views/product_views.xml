@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+        <!-- Product Suppliers-->
+        <record id="edocument_product_supplier_tree_view2" model="ir.ui.view">
+            <field name="name">edocument.product.supplier.list.view2</field>
+            <field name="model">edocument.product.supplier</field>
+            <field name="inherit_id" ref="l10n_ec_edi_import.edocument_product_supplier_tree_view"/>
+            <field name="mode">primary</field>
+            <field name="priority" eval="1000"/>
+            <field name="arch" type="xml">
+                <xpath expr="//list" position="attributes">
+                    <attribute name="editable">bottom</attribute>
+                </xpath>
+                <xpath expr="//list" position="inside">
+                    <field name="company_id" column_invisible="True"/>
+                </xpath>
+                <xpath expr="//field[@name='company_id']" position="attributes">
+                    <attribute name="readonly">0</attribute>
+                    <attribute name="optional">hide</attribute>
+                </xpath>
+                <xpath expr="//field[@name='partner_id']" position="attributes">
+                    <attribute name="readonly">0</attribute>
+                </xpath>
+                <xpath expr="//field[@name='product_id']" position="attributes">
+                    <attribute name="readonly">0</attribute>
+                    <attribute name="options">{'no_create': True, 'no_open': True}</attribute>
+                    <attribute name="domain">[('product_tmpl_id', '=', parent.id)]</attribute>
+                </xpath>
+
+            </field>
+        </record>
+
+        <record id="product_edocument_product_supplier_tree_view2" model="ir.ui.view">
+            <field name="name">edocument.product.supplier.list.view2.product</field>
+            <field name="model">edocument.product.supplier</field>
+            <field name="inherit_id" ref="l10n_ec_edi_import.edocument_product_supplier_tree_view2"/>
+            <field name="mode">primary</field>
+            <field name="priority" eval="1000"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='product_id']" position="attributes">
+                    <attribute name="domain">[('product_tmpl_id', '=', parent.product_tmpl_id)]</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_product_supplier_inherit" model="ir.ui.view">
+            <field name="name">product.template.supplier.form.inherit</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_form_view"/>
+            <field name="arch" type="xml">
+                <group name="purchase" position="before">
+                    <field name="edocument_product_ids" context="{'default_product_tmpl_id': id, 'default_price': standard_price, 'product_template_invisible_variant': True, 'list_view_ref':'l10n_ec_edi_import.edocument_product_supplier_tree_view2'}" nolabel="1" invisible="product_variant_count &gt; 1" readonly="product_variant_count &gt; 1"/>
+                    <field name="edocument_product_variant_ids" context="{'model': 'product.template', 'active_id': id, 'list_view_ref':'l10n_ec_edi_import.edocument_product_supplier_tree_view2'}" nolabel="1" invisible="product_variant_count &lt;= 1" readonly="product_variant_count &lt;= 1"/>
+                </group>
+            </field>
+        </record>
+
+        <record id="view_product_product_supplier_inherit" model="ir.ui.view">
+            <field name="name">product.product.form</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_normal_form_view"/>
+            <field name="arch" type="xml">
+                <field name="edocument_product_ids" position="attributes">
+                    <attribute name="context">{'default_product_tmpl_id': product_tmpl_id, 'product_template_invisible_variant': True, 'default_price': standard_price, 'list_view_ref':'l10n_ec_edi_import.product_edocument_product_supplier_tree_view2'}</attribute>
+                </field>
+                <field name="edocument_product_variant_ids" position="attributes">
+                    <attribute name="context">{'model': 'product.product', 'active_id': id, 'default_price': standard_price, 'list_view_ref':'l10n_ec_edi_import.product_edocument_product_supplier_tree_view2'}</attribute>
+                </field>
+            </field>
+        </record>
+
+
+        <record id="product_template_search_view_purchase" model="ir.ui.view">
+            <field name="name">product.template.search.purchase</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_search_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='categ_id']" position="after">
+                    <field string="Productos Homologados" name="edocument_product_ids"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Product catalog -->
+        <!-- <record id="product_view_kanban_catalog_purchase_only" model="ir.ui.view">
+            <field name="name">product.view.kanban.catalog.purchase</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_view_kanban_catalog"/>
+            <field name="mode">primary</field>
+            <field name="arch" type="xml">
+                <xpath expr="//kanban" position="attributes">
+                    <attribute name="js_class">purchase_product_kanban_catalog</attribute>
+                    <attribute name="sample">1</attribute>
+                </xpath>
+            </field>
+        </record> -->
+
+        <record id="product_view_search_catalog" model="ir.ui.view">
+            <field name="name">product.view.search.catalog.inherit.purchase</field>
+            <field name="model">product.product</field>
+            <field name="mode">primary</field>
+            <field name="inherit_id" ref="product.product_view_search_catalog"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='product_tmpl_id']" position="after">
+                    <field name="edocument_product_ids" string="Homologado"/>
+                </xpath>
+                <xpath expr="//filter[@name='goods']" position="after">
+                    <filter string="In the Order"
+                            name="products_in_order"
+                            domain="[('is_in_purchase_order', '=', True)]"/>
+                </xpath>
+            </field>
+        </record>
+
+</odoo>

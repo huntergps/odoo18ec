@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+     <!--  card.brand Form View -->
+        <record model="ir.ui.view" id="account_credit_card_brand_form">
+            <field name="name">account.credit.card.brand.form</field>
+            <field name="model">account.credit.card.brand</field>
+            <field name="arch" type="xml">
+                <form string="Marcas de Tarjetas">
+                    <sheet>
+                         <group>
+                             <group>
+                                <field name="name"/>
+                                <field name="code"/>
+
+                             </group>
+                             <group>
+                                <field name="credit"/>
+                                <field name="debit"/>
+                            </group>
+
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!--  card.brand Tree View -->
+        <record model="ir.ui.view" id="account_credit_card_brand_tree">
+            <field name="name">account.credit.card.brand.tree</field>
+            <field name="model">account.credit.card.brand</field>
+            <field name="arch" type="xml">
+                <list string="Marcas de Tarjetas">
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="credit"/>
+                    <field name="debit"/>
+                </list>
+            </field>
+        </record>
+
+        <!--  card.brand Search View -->
+        <record model="ir.ui.view" id="account_credit_card_brand_search">
+            <field name="name">account.credit.card.brand.search</field>
+            <field name="model">account.credit.card.brand</field>
+            <field name="arch" type="xml">
+                <search string="Marcas de Tarjetas">
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="credit"/>
+                    <field name="debit"/>
+                </search>
+            </field>
+        </record>
+
+
+         <record model="ir.actions.act_window" id="action_account_credit_card_brand">
+            <field name="name">Marca de Tarjetas</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.credit.card.brand</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem name="Marcas de Tarjetas" id="menu_account_credit_card_brand"
+                parent="menu_finance_configuration_menu_tarjetas_credito" sequence="1"
+                groups="account.group_account_manager,account.group_account_user,account.group_account_invoice"
+                 action="action_account_credit_card_brand"/>
+    </data>
+</odoo>

@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<odoo>
+
+    <record id="purchase_order_form_inherit" model="ir.ui.view">
+        <field name="name">purchase.order.form.inherit</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+
+            <field name="partner_ref" position="after">
+                <field name="edocument_id" domain="[('state', '=', 'purchase'), ('partner_id', 'in', (partner_id, False)), ('company_id', '=', company_id)]"
+                options="{'no_create': True}"/>
+            </field>
+
+        </field>
+    </record>
+
+    <record id="purchase_order_search_inherit" model="ir.ui.view">
+        <field name="name">purchase.order.list.select.inherit</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.view_purchase_order_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='approved']" position="after">
+                <filter string="RIDE" name="edocument" domain="[('edocument_id', '!=', False)]"  help="Compras desde RIDE"/>
+            </xpath>
+        </field>
+    </record>
+
+
+</odoo>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Heredamos la vista del formulario de Journal -->
+        <record id="view_account_journal_form_inherited" model="ir.ui.view">
+            <field name="name">account.journal.form.inherited</field>
+            <field name="model">account.journal</field>
+            <field name="inherit_id" ref="account.view_account_journal_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='type']" position="before">
+                  <field name="payment_type"/>
+                </xpath>
+
+                <xpath expr="//field[@name='default_account_id']" position="replace">
+                    <!-- Nuevo campo o configuración que deseas agregar -->
+                    <label for="default_account_id" string="Cuenta para anticipos" invisible="type != 'advance'" groups="account.group_account_readonly"/>
+                    <label for="default_account_id" string="Cuenta para cruces" invisible="type != 'cross'" groups="account.group_account_readonly"/>
+                     <field name="default_account_id" nolabel="1"
+                            invisible="not type"
+                            required="(id and type in ('bank', 'cash', 'credit','advance','cross')) or type in ('sale', 'purchase')"
+                            options="{'no_quick_create': True}"
+                            groups="account.group_account_readonly"/>
+                </xpath>
+                <xpath expr="//field[@name='suspense_account_id']" position="replace">
+
+                    <field name="suspense_account_id"
+                           invisible="type not in ('bank', 'cash', 'credit','cross','advance')"
+                           required="type in ('bank', 'cash', 'credit','cross','advance')"
+                           options="{'no_quick_create': True}"
+                           groups="account.group_account_readonly"/>
+                </xpath>
+                <!-- Modificar la visibilidad de la página de configuración de pagos entrantes -->
+                <page id="inbound_payment_settings" position="attributes">
+                    <attribute name="invisible">type not in ['cash', 'bank', 'credit', 'cross', 'advance']</attribute>
+                </page>
+
+                <!-- Modificar la visibilidad de la página de configuración de pagos salientes -->
+                <page id="outbound_payment_settings" position="attributes">
+                    <attribute name="invisible">type not in ['cash', 'bank', 'credit', 'cross', 'advance']</attribute>
+                </page>
+
+            </field>
+        </record>
+
+    </data>
+</odoo>

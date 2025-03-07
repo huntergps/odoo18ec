@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_account_advance_readonly,access_account_advance_readonly,model_account_advance,account.group_account_readonly,1,0,0,0
+access_account_advance,access_account_advance,model_account_advance,account.group_account_invoice,1,1,1,1
+access_base_user_brand,access_base_user_brand,model_account_credit_card_brand,base.group_user,1,1,1,1
+access_base_user_deadline,access_base_user_deadline,model_account_credit_card_deadline,base.group_user,1,1,1,1
+access_base_user_return_reason,access_base_user_return_reason,model_return_reason,base.group_user,1,1,1,1

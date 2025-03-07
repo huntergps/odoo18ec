@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="res_config_settings_l10n_ec_payment" model="ir.ui.view">
+            <field name="name">res.config.settings.l10n.ec.edi</field>
+            <field name="model">res.config.settings</field>
+            <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//block[@id='invoicing_settings']" position="before">
+                    <block id="l10n_ec_payment_settings" title="Pagos en Ecuador" invisible="country_code != 'EC'">
+
+
+                      <setting id="l10n_ec_edocument_advance_accounts" string="Anticipos" company_dependent="1" help="Cuentas para Anticipos">
+                          <div class="content-group">
+                              <div class="row">
+                                  <label for="l10n_ec_payment_advance_customer_id" string="Anticipos Clientes" class="col-lg-4 o_light_label"/>
+                                  <field name="l10n_ec_payment_advance_customer_id" domain="[('account_type', 'in', ['liability_current','liability_payable'])]"/>
+                              </div>
+                              <div class="row">
+                                <label for="l10n_ec_payment_advance_vendor_id" string="Anticipos Proveedores" class="col-lg-4 o_light_label"/>
+                                <field name="l10n_ec_payment_advance_vendor_id" domain="[('account_type', 'in', ['asset_prepayments'])]"/>
+                              </div>
+                          </div>
+                      </setting>
+
+
+
+                    </block>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

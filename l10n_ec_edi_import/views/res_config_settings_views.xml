@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="res_config_settings_l10n_ec_edi_import" model="ir.ui.view">
+            <field name="name">res.config.settings.l10n.ec.edi</field>
+            <field name="model">res.config.settings</field>
+            <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//block[@id='invoicing_settings']" position="after">
+                    <block id="l10n_ec_edi_import_settings" title="Importacin de XML de documentos electronicos" invisible="country_code != 'EC'">
+
+                      <setting id="l10n_ec_edocument_order_state" string="Ordenes de Compras" company_dependent="1" help="Procesar compras al importar RIDE">
+                          <div class="content-group">
+                              <div class="row">
+                                  <label for="l10n_ec_edocument_state_orders" string="Productos" class="col-lg-4 o_light_label"/>
+                                  <field name="l10n_ec_edocument_state_orders"/>
+                              </div>
+                              <div class="row">
+                              </div>
+                          </div>
+                      </setting>
+
+                      <setting id="l10n_ec_edocument_goods_sale" string="RIDE Ventas" company_dependent="1" help="Impuestos por defecto en Ventas">
+                          <div class="content-group">
+                              <div class="row">
+                                  <label for="l10n_ec_edocument_goods_sale_tax_id" string="Productos" class="col-lg-4 o_light_label"/>
+                                  <field name="l10n_ec_edocument_goods_sale_tax_id" domain="[('tax_group_id.l10n_ec_type', '=', 'vat15'),('type_tax_use','=','sale'),('company_id', '=', company_id)]"/>
+                              </div>
+                              <div class="row">
+                                  <label for="l10n_ec_edocument_services_sale_tax_id" string="Servicios" class="col-lg-4 o_light_label"/>
+                                  <field name="l10n_ec_edocument_services_sale_tax_id" domain="[('tax_group_id.l10n_ec_type', '=', 'vat15'),('type_tax_use','=','sale'),('company_id', '=', company_id)]"/>
+                              </div>
+                          </div>
+                      </setting>
+
+                        <setting id="l10n_ec_edocument_goods_purchase" string="RIDE Compras" company_dependent="1" help="Impuestos por defecto en Commpras">
+                            <div class="content-group">
+                                <div class="row">
+                                    <label for="l10n_ec_edocument_goods_purchase_tax_id" string="Productos" class="col-lg-4 o_light_label"/>
+                                    <field name="l10n_ec_edocument_goods_purchase_tax_id" domain="[('tax_group_id.l10n_ec_type', '=', 'vat15'),('type_tax_use','=','purchase'),('company_id', '=', company_id)]"/>
+                                </div>
+                                <div class="row">
+                                    <label for="l10n_ec_edocument_services_purchase_tax_id" string="Servicios" class="col-lg-4 o_light_label"/>
+                                    <field name="l10n_ec_edocument_services_purchase_tax_id" domain="[('tax_group_id.l10n_ec_type', '=', 'vat15'),('type_tax_use','=','purchase'),('company_id', '=', company_id)]"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting id="l10n_ec_edocument_sale_margin" company_dependent="1" help="Porcentaje de ganancia para productos importados por defecto">
+\                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="l10n_ec_edocument_sale_margin" class="col-lg-4 o_light_label"/>
+                                    <field name="l10n_ec_edocument_sale_margin"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

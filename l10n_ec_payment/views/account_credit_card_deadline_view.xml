@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+     <!--  card.deadline Form View -->
+        <record model="ir.ui.view" id="account_credit_card_deadline_form">
+            <field name="name">account.credit.card.deadline.form</field>
+            <field name="model">account.credit.card.deadline</field>
+            <field name="arch" type="xml">
+                <form string="Plazos de Tarjetas">
+                    <sheet>
+                         <group>
+                             <group>
+                                <field name="name"/>
+                             </group>
+                             <group>
+                                <field name="type"/>
+                                <field name="meses"/>
+                                <field name="interes"/>
+                                <field name="credit"/>
+                                <field name="debit"/>
+                            </group>
+
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!--  card.deadline Tree View -->
+        <record model="ir.ui.view" id="account_credit_card_deadline_tree">
+            <field name="name">account.credit.card.deadline.tree</field>
+            <field name="model">account.credit.card.deadline</field>
+            <field name="arch" type="xml">
+                <list string="Plazos de Tarjetas">
+                    <field name="name"/>
+                    <field name="type"/>
+                    <field name="meses"/>
+                    <field name="interes"/>
+                    <field name="credit"/>
+                    <field name="debit"/>
+                </list>
+            </field>
+        </record>
+
+        <!--  card.deadline Search View -->
+        <record model="ir.ui.view" id="account_credit_card_deadline_search">
+            <field name="name">account.credit.card.deadline.search</field>
+            <field name="model">account.credit.card.deadline</field>
+            <field name="arch" type="xml">
+                <search string="Plazos de Tarjetas">
+                    <field name="name"/>
+                    <field name="type"/>
+                    <field name="meses"/>
+                    <field name="interes"/>
+                    <field name="credit"/>
+                    <field name="debit"/>
+                </search>
+            </field>
+        </record>
+
+
+         <record model="ir.actions.act_window" id="action_account_credit_card_deadline">
+            <field name="name">Plazos de Tarjetas</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.credit.card.deadline</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem name="Plazos de Tarjetas" id="menu_account_credit_card_deadline"
+                parent="menu_finance_configuration_menu_tarjetas_credito" sequence="1"
+                groups="account.group_account_manager,account.group_account_user,account.group_account_invoice"
+                 action="action_account_credit_card_deadline"/>
+    </data>
+</odoo>

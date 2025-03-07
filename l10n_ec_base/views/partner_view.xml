@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_partner_property_form_inherit" model="ir.ui.view">
+            <field name="name">res.partner.property.form.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="priority">2</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='accounting']" position="inside" >
+                    <group string="Información de Ventas">
+                        <field name="no_invoice"  readonly="can_edit_credit_payment_terms == 0"   />
+                        <field name="last_day_to_invoice"  readonly="can_edit_credit_payment_terms == 0"  />
+                        <field name="acepta_cheques"  readonly="can_edit_credit_payment_terms == 0"  />
+                        <field name="can_edit_credit_payment_terms" invisible="1"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_partner_property_form_payment_term" model="ir.ui.view">
+            <field name="name">res.partner.property.form.payment.term</field>
+            <field name="model">res.partner</field>
+            <field name="priority">2</field>
+            <field name="inherit_id" ref="account.view_partner_property_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='property_payment_term_id']" position="replace">
+                    <field  name="property_payment_term_id" widget="selection" readonly="can_edit_credit_payment_terms == 0" />
+                    <field string="Términos Autorizados" name="terminos_pagos_ids" widget="many2many_checkboxes" readonly="can_edit_credit_payment_terms == 0" />
+                    <field name="can_edit_credit_payment_terms" invisible="1"/>
+                </xpath>
+                <xpath expr="//field[@name='property_supplier_payment_term_id']" position="replace">
+                    <field  name="property_supplier_payment_term_id" widget="selection" domain="[('id', 'in', terminos_pagos_supplier_ids)]" options="{'no_open': True, 'no_create': True}"  />
+                    <field string="Términos Autorizados" name="terminos_pagos_supplier_ids" widget="many2many_checkboxes" readonly="can_edit_credit_payment_terms == 0" />
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>
