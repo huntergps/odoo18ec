@@ -13,13 +13,14 @@
 
                       <setting id="l10n_ec_edocument_advance_accounts" string="Anticipos" company_dependent="1" help="Cuentas para Anticipos">
                           <div class="content-group">
+                            
                               <div class="row">
-                                  <label for="l10n_ec_payment_advance_customer_id" string="Anticipos Clientes" class="col-lg-4 o_light_label"/>
-                                  <field name="l10n_ec_payment_advance_customer_id" domain="[('account_type', 'in', ['liability_current','liability_payable'])]"/>
+                                  <label for="l10n_ec_payment_advance_customer_journal_id" string="Diario de Anticipos de Clientes" class="col-lg-4 o_light_label"/>
+                                  <field name="l10n_ec_payment_advance_customer_journal_id"/>
                               </div>
                               <div class="row">
-                                <label for="l10n_ec_payment_advance_vendor_id" string="Anticipos Proveedores" class="col-lg-4 o_light_label"/>
-                                <field name="l10n_ec_payment_advance_vendor_id" domain="[('account_type', 'in', ['asset_prepayments'])]"/>
+                                <label for="l10n_ec_payment_advance_vendor_journal_id" string="Diario de Anticipos de Proveedores" class="col-lg-4 o_light_label"/>
+                                <field name="l10n_ec_payment_advance_vendor_journal_id"/>
                               </div>
                           </div>
                       </setting>

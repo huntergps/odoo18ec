@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record model="ir.actions.act_window" id="launch_receive_wizard">
+            <field name="name">Recepción de Chequera</field>
+            <field name="res_model">recibir.chequera</field>
+            <field name="target">new</field>
+        </record>
+        <record model="ir.ui.view" id="wizard_form_view_pdf">
+            <field name="name">recibir.chequera.wizard</field>
+            <field name="model">recibir.chequera</field>
+            <field name="arch" type="xml">
+                <form string="Recepción de Chequera">
+                    <separator string="Cheque Nro"/>
+                        <group>
+                            <group>
+                                 <field name="cheque_from" style="width:40%%"/>
+                                 <field name="cheque_to" style="width:40%%"/>
+                            </group>
+                            <group>
+                                <field name="bank_account_id"   required="1"
+                                    options="{'no_create': True, 'no_quick_create':True, 'no_create_edit':True}"
+                                    domain="[('type', '=', 'bank'),('tiene_chequera','=',True)]" />
+
+                            </group>
+                        </group>
+
+                    <footer>
+                        <button name="receive_cheque" string="Recibir Chequera" type="object" class="oe_highlight"/>
+                        <button name="action_clear" string="Limpiar" type="object" class="oe_highlight"/>
+                        or <button string="Cancelar" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <act_window id="launch_receive_cheque"
+                    name="Recepción de Chequera"
+                    res_model="recibir.chequera"
+                    view_mode="form"
+                    target="new"
+                    />
+        <!--
+        <menuitem name="Recibir Chequera" id="menu_receive" parent="menu_emision_documentos" sequence="3"
+                  action="launch_receive_cheque"/>
+              -->
+
+    </data>
+</odoo>

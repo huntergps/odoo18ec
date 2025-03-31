@@ -3,6 +3,7 @@ from odoo.exceptions import UserError
 
 
 class AccountPaymentRegister(models.TransientModel):
+    _name = 'account.payment.register'    
     _inherit = ['account.payment.register']
 
     def _init_payments(self, to_process, edit_mode=False):

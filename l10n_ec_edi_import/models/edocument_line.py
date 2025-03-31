@@ -101,7 +101,6 @@ class ElectronicDocumentLine(models.Model):
         ],
         required=True,
         default='consu',
-        tracking=True,
 
     )
 
@@ -110,7 +109,6 @@ class ElectronicDocumentLine(models.Model):
         comodel_name='product.category',
         default=_get_default_category_id,
         group_expand='_read_group_categ_id',
-        tracking=True,
     )
 
     tipo_homologacion = fields.Selection(related='order_id.tipo_homologacion',

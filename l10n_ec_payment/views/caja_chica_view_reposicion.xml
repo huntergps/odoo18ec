@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+
+
+
+    <record id="caja_chica_reposicion_view_form" model="ir.ui.view">
+        <field name="name">caja.chica.reposicion.form.view</field>
+        <field name="model">caja.chica.reposicion</field>
+        <field name="arch" type="xml">
+            <form string="Reposición de Caja Chica">
+              <header  >
+
+                <button name="post" class="oe_highlight"  string="En Proceso" type="object"
+                    invisible="state in ('working','posted','cancelled')"
+                     />
+
+                  <button name="post" class="oe_highlight"  string="Validar" type="object"
+                      invisible="state in ('draft','posted','cancelled')"
+                       />
+
+
+                 <button name="cancel" class="oe_highlight"  string="Cancelar" type="object"
+                     invisible="state in ('draft','working','cancelled')"
+                     groups="account.group_account_manager"
+                      />
+                  <button name="to_draft" class="oe_highlight"  string="Poner en Borrador" type="object"
+                      invisible="state in ('draft','posted')"
+                      groups="account.group_account_manager"
+                       />
+                  <field name="state" widget="statusbar"
+                      statusbar_visible="draft,working,posted,cancelled" />
+              </header>
+
+                <sheet>
+                    <field name="type" invisible="1"/>
+                      <field name="currency_id" invisible="1"/>
+                    <field name="company_id" invisible="1"/>
+
+                    <div class="oe_title" id="title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1><field name="name" required="1"
+                          /></h1>
+                    </div>
+                  <group>
+                        <group>
+
+                          <field name="caja_chica_id"
+                            domain="[('type', '=', type)]"
+                            options="{'no_create': True}"/>
+                          <field name="partner_id" required="1" force_save="1"
+                                    />
+
+                        </group>
+                        <group>
+                          <field name="es_inicial" invisible="1"/>
+                          <field name="date"/>
+                          <field name="amount"  required="1"
+                            />
+                          <field name="amount_liquidado" readonly="1"
+                                />
+                          <field name="balance"
+                                />
+
+                          <label for="es_inicial" string="" />
+
+                          <div >
+                                  <!-- <button name="suma_monto" string="Refrescar Monto"
+                                      attrs="{'invisible': [('state','!=','draft')] }"
+                                      class="oe_stat_button btn-primary "  icon="fa-times-circle" type="object" /> -->
+                                  <!-- <button name="button_load_deudas_de_pagos" string="Refrescar Facturas"
+                                    class="oe_stat_button btn-primary "  icon="fa-times-circle" type="object" /> -->
+
+                                    <button name="compute_poner_enlace_invoice_id" string="Vincular pagos"
+                                      class="oe_stat_button btn-primary "  icon="fa-times-circle" type="object" />
+
+                                      <![CDATA[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]]>
+
+                                    <button name="compute_quitar_enlace_invoice_id" string="Desvincular pagos"
+                                      class="oe_stat_button btn-primary "  icon="fa-times-circle" type="object" />
+
+                                      <![CDATA[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]]>
+
+                                    <button name="compute_facturas_relacionadas" string="Revisar Facturas Pagadas"
+                                        invisible="state != 'draft'"
+                                      class="oe_stat_button btn-primary "  icon="fa-times-circle" type="object" />
+
+                                      <!-- .
+                                  <button name="load_varias_deudas_sin_reposicion" string="Cargar Todas Deudas"
+                                      attrs="{'invisible': [('state','!=','draft')] }"
+                                      confirm="Se procederá a borrar las facturas seleccionadas y cargar nuevamente. Desea continuar?"
+                                      class="oe_stat_button btn-danger "  icon="fa-times-circle" type="object" /> -->
+                          </div>
+
+                        </group>
+
+                  </group>
+
+                  <notebook>
+
+                    <page id="repos" string="Pagos aplicados" >
+                        <field name="reposiciones_facturas_ids" >
+                        <list name="reposiciones_facturas_ids" limit="200" string="Deudas pagadas" editable="top" create="false" delete='false'>
+                            <field name="move_id" invisible="1"/>
+                            <field name="secuencial" />
+                            <field name="partner_id" />
+                            <field name="comprobante_sri_id" />
+                            <field name="date" />
+                            <field name="due_date" />
+                            <field name="monto_original" string="Total" sum="Total" />
+                            <field name="monto_pago_actual"  sum="Total"
+                              options='{
+                                  "bg_color": "LightSeaGreen: monto_pago_actual != 0",
+                                  "fg_color": "yellow: monto_pago_actual != 0"
+                                   }'
+                                   />
+                            <!-- <field name="monto_diponible" string="Pendiente"  sum="Total Pendiente"/> -->
+                            <field name="monto_saldo" sum="Total Saldo"/>
+                            <field name="total_retenido_now" invisible="1"/>
+                            <field name="amount_residual_now" invisible="1"/>
+                            <field name="tipo_compra" invisible="0"/>
+                            <field name="currency_id" invisible="1"/>
+
+                        </list>
+
+                    </field>
+                    </page>
+
+                  <page id ="docs_pagar" string="Facturas Vinculadas"   >
+                      <field name="domain_invoice_id" invisible="1"/>
+                      <field name="invoice_ids"  nolabel="1" 
+                        domain="domain_invoice_id"
+                        context="{'tree_view_ref': 'mass_payment.view_deudas_tree_search_caja_chica'}"
+                        options='{"no_create":True,"no_open": True}'
+                                >
+                        <list string="Deudas"  editable="top" limit="500"
+                              decoration-info="state == 'draft'"
+                              decoration-muted="state == 'cancel'">
+                            <field name="name" invisible="0" />
+                            <field name="invoice_date" string="Fecha" optional="show"/>
+                            <field name="partner_id" optional="show" string="Proveedor"/>
+                            <field name="invoice_date_due" string="Vencimiento" optional="show"/>
+                            <field name="amount_untaxed_signed" string="Subtotal" sum="Total" optional="hide"/>
+                            <field name="amount_tax_signed" string="Impuestos" sum="Total" optional="hide"/>
+                            <field name="amount_total" string="Total" sum="Total" optional="show"/>
+                            <field name="total_pagado_caja_chica" optional="show" string="Pagado C. Chica" sum="Total"/>
+                            <field name="total_pagado_fondo_rendir" optional="show" string="Pagado F. Rendir" sum="Total"/>
+                            <!-- <field name="total_pagado_sin_ret" optional="show" string="Pagado sin Ret" sum="Total"/> -->
+
+                            <!-- <field name="total_retenido"  optional="show" sum="Total" /> -->
+                            <field name="amount_residual_signed" string="Pendiente" sum="Pendiente" optional="show"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="company_currency_id" invisible="1"/>
+                            <field name="state" optional="show"/>
+                            <!-- <field name="invoice_payment_state" invisible="1"/> -->
+                            <field name="company_id" invisible="1"/>
+                            <!-- <field name="invoice_type" invisible="0"/> -->
+
+                        </list>
+                      </field>
+                    </page>
+
+                    <page id ="mass_payments" string="Pagos"   >
+                      <!-- <field name="invoice_ids" /> -->
+                        <field name="mass_payment_ids"  nolabel="1"
+                          context="{'tree_view_ref': 'mass_payment.view_mass_crossing_tree'}"
+                          options='{"no_create":True,"no_open": True}'
+                                  >
+                        </field>
+                      </page>
+
+
+
+                  </notebook>
+
+                </sheet>
+                    <div class="o_attachment_preview"/>
+                    <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_caja_chica_reposicion_tree" model="ir.ui.view">
+        <field name="name">caja.chica.reposicion.tree.view</field>
+        <field name="model">caja.chica.reposicion</field>
+        <field name="arch" type="xml">
+            <list string="Reposición de Caja Chica">
+              <field name="date" />
+                <field name="name" />
+                <field name="partner_id"/>
+                <field name="date"/>
+                <field name="amount"/>
+                <field name="balance" readonly="1"/>
+                <field name="state" invisible="0"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_caja_chica_reposicion_search" model="ir.ui.view">
+        <field name="name">caja.chica.reposicion.search.view</field>
+        <field name="model">caja.chica.reposicion</field>
+        <field name="arch" type="xml">
+            <search string="Reposición de Caja Chica">
+                <field name="name"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_caja_chica_reposicion_pos" model="ir.actions.act_window">
+        <field name="name">Reposición de Caja Chica</field>
+        <field name="res_model">caja.chica.reposicion</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_caja_chica_reposicion_search" />
+        <field name="context">{
+                'default_type': 'normal'
+                }</field>
+        <field name="domain">[('type', '=', 'normal')]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crear nueva Reposición de Caja Chica
+            </p><p>
+
+            </p>
+        </field>
+    </record>
+
+
+    <menuitem
+        id="menu_caja_chica_reposicion_pos"
+        name="Reposición de Caja"
+        parent="l10n_ec_base.menu_finance_caja_chica"
+        sequence="2"
+        action="action_caja_chica_reposicion_pos"
+        />
+
+
+        <record id="action_caja_chica_liquidacion_pos" model="ir.actions.act_window">
+            <field name="name">Liquidación de Fondos a Rendir</field>
+            <field name="res_model">caja.chica.reposicion</field>
+            <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="view_caja_chica_reposicion_search" />
+            <field name="context">{
+                    'default_type': 'liquidity'
+                    }</field>
+            <field name="domain">[('type', '=', 'liquidity')]</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Crear nueva Liquidación de Fondos a Rendir
+                </p><p>
+
+                </p>
+            </field>
+        </record>
+
+
+        <menuitem
+            id="menu_caja_chica_liquidacion_pos"
+            name="Liquidación de Fondos a Rendir"
+            parent="l10n_ec_base.menu_finance_caja_chica"
+            sequence="4"
+            action="action_caja_chica_liquidacion_pos"
+            />
+
+</odoo>

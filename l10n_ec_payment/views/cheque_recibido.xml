@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+
+
+        <record model="ir.ui.view" id="cheque_recibido_kanban_view">
+            <field name="name">cheque.recibido.kanban</field>
+            <field name="model">cheque.recibido</field>
+            <field name="arch" type="xml">
+
+
+                <kanban class="o_kanban_mobile" create='false' import="false" >
+                    <field name="journal_id"/>
+                    <field name="name"/>
+                    <field name="cheque_date"/>
+                    <field name="state"/>
+
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="cheque_date"/>
+                    <field name="amount"/>
+                    <field name="state"/>
+
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_global_click">
+                                <div class="row mb4">
+                                    <div class="col-6 o_kanban_record_headings">
+                                        <strong><span><field name="journal_id"/></span></strong>
+                                    </div>
+                                    <div class="col-6 text-right">
+                                        <strong><i class="fa fa-clock-o" aria-label="Fecha" role="img" title="Date"/> <t t-esc="record.cheque_date.value"/></strong>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <span><field name="name"/></span>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <span><field name="amount" widget='monetary'/></span>
+                                        <span><field name="currency_id" invisible="1"/></span>
+                                    </div>
+                                    <div class="col-6">
+                                        <span class="float-right">
+                                            <field name="state" widget="label_selection" options="{'classes': {'new': 'default',
+                                            'used': 'default',
+                                            'printed': 'default',
+                                            'issued': 'default',
+                                            'pending': 'warning',
+                                            'cleared': 'success',
+                                            'returned': 'danger',
+                                            'cancelled': 'default',
+                                            'lost': 'danger'}}"/>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+
+
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_cheque_recibido_calendar">
+            <field name="name">cheque.recibido.calendar</field>
+            <field name="model">cheque.recibido</field>
+            <field name="arch" type="xml">
+                <calendar string="Cheques" color="state" date_start="cheque_date">
+                    <field name="partner_id"/>
+                    <field name="amount"/>
+                </calendar>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_cheque_recibido_graph">
+            <field name="name">cheque.recibido.graph</field>
+            <field name="model">cheque.recibido</field>
+            <field name="arch" type="xml">
+                <graph string="Cheque Analysis">
+                    <field name="partner_id"/>
+                    <field name="amount" type="measure"/>
+                </graph>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_cheque_recibido_pivot">
+            <field name="name">cheque.recibido.pivot</field>
+            <field name="model">cheque.recibido</field>
+            <field name="arch" type="xml">
+                <pivot string="Cheques">
+                    <field name="name" type="row"/>
+                    <field name="amount" type="measure"/>
+                </pivot>
+            </field>
+        </record>
+
+
+        <record model="ir.ui.view" id="cheque_recibido_tree">
+            <field name="name">cheque.recibido.tree</field>
+            <field name="model">cheque.recibido</field>
+            <field name="arch" type="xml">
+                <list string="Cheques" create="true" delete="false"
+                      decoration-info="state == 'draft'"
+                      decoration-muted="state == 'pending'">
+
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="journal_id"/>
+
+                    <field name="cheque_date_reception" />
+                    <field name="cheque_date"  />
+                    <field name="cheque_date_efective" />
+
+                    <field name="es_posfechado" />
+                    <field name="amount"/>
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_cheque_recibido_form">
+            <field name="name">cheque.recibido.form</field>
+            <field name="model">cheque.recibido</field>
+            <field name="arch" type="xml">
+                <form string="Cheque" create="true" delete='false'>
+                    <header>
+
+                        <button name="verifica_fechas" string="Verifica Fechas" type="object"/>
+                        <button name="unlink" invisible="state not in ('hold','received','cancelled')" string="Borrar"
+                          groups="account.group_account_manager"
+                          confirm="Esta seguro que quiere Eliminar?"
+                          type="object"/>
+
+
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="received,hold,sent,desposited,cleared,returned,cancelled"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+
+                     <group>
+                         <group>
+                            <field name="cheque_no" readonly="0"/>
+                            <field name="journal_id" readonly="0" options="{'no_create': True}"/>
+                            <field name="partner_id" readonly="0" options="{'no_create': True}"/>
+                            <!--
+                            <field name="partner_account_id" attrs="{'invisible':[('state','in',('new'))]}" options="{'no_create': True}"/>
+                        -->
+                            <field name="amount" readonly="0" invisible="state in ('new', 'used')"/>
+                            <field name="es_posfechado" />
+
+                         </group>
+                         <group>
+                            <field name="cheque_date_reception" />
+                            <field name="cheque_date"  />
+                            <field name="cheque_date_efective" readonly="0" invisible="not cheque_date_efective"/>
+                            <field name="hold_date" invisible="not hold_date"/>
+                            <field name="cancel_date" invisible="not cancel_date"/>
+                            <field name="return_date" invisible="not return_date"/>
+                            <field name="pago_id" readonly="1"/>
+                            <field name="comprobante_pago_id" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page id ="move_line_ids" string="Apuntes"  >
+                            <field name="move_line_ids"/>
+                        </page>
+
+                        <page id ="account_move_ids" string="Asientos"  >
+                            <field name="account_move_ids"/>
+                        </page>
+                        <page id ="postfechado_deudas_ids" string="Deudas Generadas"  >
+                          <button name="create_deuda_postechado"  string="Generar Deuda de Cheque" type="object"/>
+                            <field name="postfechado_deudas_ids"/>
+                        </page>
+                    </notebook>
+
+
+                    <separator string="Comentarios"/>
+                    <field name="comment"/>
+                    </sheet>
+                                       <div class="o_attachment_preview"/>
+                    <chatter/>
+                </form>
+
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="cheque_recibido_search">
+            <field name="name">cheque.recibido.search</field>
+            <field name="model">cheque.recibido</field>
+            <field name="arch" type="xml">
+                <search string="Cheques">
+                    <field name="name"/>
+                    <field name="cheque_no"/>
+                    <field name="journal_id"/>
+                    <field name="partner_id"/>
+                    <field name="es_posfechado" />
+                </search>
+            </field>
+        </record>
+
+ 
+
+<record id="action_cheque_recibido" model="ir.actions.act_window">
+    <field name="name">Cheques Recibidos</field>
+    <field name="res_model">cheque.recibido</field>
+    <field name="view_mode">list,form</field>
+    <field name="view_id" ref="cheque_recibido_tree"/>
+    <field name="context">{
+        "search_default_state_new": 1
+    }</field>
+    <field name="help" type="html">
+        <p class="o_view_nocontent_smiling_face">
+            Registra un cheque recibido
+        </p>
+        <p>
+            Los cheques recibidos representan pagos realizados por terceros. Puedes gestionar su estado desde esta vista.
+        </p>
+    </field>
+</record>
+
+        <menuitem name="Cheques Recibidos" id="menu_action_cheque_recibido"
+            parent="l10n_ec_base.menu_finance_bank_and_cash" action="action_cheque_recibido"
+            sequence="32"
+        />
+
+
+
+    </data>
+</odoo>

@@ -2,7 +2,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo import _, api, fields, models , Command
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 from datetime import date, timedelta
 
 
@@ -128,56 +128,20 @@ class AccountPayment(models.Model):
 
         return res
 
-
-    def action_post1(self):
-        super(AccountPayment, self).action_post()
-        for payment in self:
-            if payment.payment_invoice_ids:
-                reconcile_amount_sum=payment.currency_id.round(sum(payment.payment_invoice_ids.mapped('reconcile_amount')))
-                if payment.amount < reconcile_amount_sum:
-                    raise UserError(
-                        _("La suma del importe total a pagar de las facturas listadas ({reconcile_amount_sum}) es mayor que el importe del pago ({payment_amount}).").format(
-                            reconcile_amount_sum,payment.amount)
-                        )
-
-
-            for line_id in payment.payment_invoice_ids:
-                if not line_id.reconcile_amount:
-                    continue
-                if line_id.amount_total <= line_id.reconcile_amount:
-                    self.ensure_one()
-                    if payment.payment_type == 'inbound':
-                        lines = payment.move_id.line_ids.filtered(lambda line: line.credit > 0)
-                        if lines:
-                            lines += line_id.invoice_id.line_ids.filtered(
-                                lambda line: line.account_id == lines[0].account_id and not line.reconciled)
-                            lines.reconcile()
-                    elif payment.payment_type == 'outbound':
-                        lines = payment.move_id.line_ids.filtered(lambda line: line.debit > 0)
-                        if lines:
-                            lines += line_id.invoice_id.line_ids.filtered(
-                                lambda line: line.account_id == lines[0].account_id and not line.reconciled)
-                            lines.reconcile()
-                else:
-                    self.ensure_one()
-                    if payment.payment_type == 'inbound':
-                        lines = payment.move_id.line_ids.filtered(lambda line: line.credit > 0)
-                        if lines:
-                            lines += line_id.invoice_id.line_ids.filtered(
-                                lambda line: line.account_id == lines[0].account_id and not line.reconciled)
-                            lines.with_context(amount=-line_id.reconcile_amount).reconcile()
-                    elif payment.payment_type == 'outbound':
-                        lines = payment.move_id.line_ids.filtered(lambda line: line.debit > 0)
-                        if lines:
-                            lines += line_id.invoice_id.line_ids.filtered(
-                                lambda line: line.account_id == lines[0].account_id and not line.reconciled)
-                            lines.with_context(amount=line_id.reconcile_amount).reconcile()
-                payment._compute_stat_buttons_from_reconciliation()
-        return True
+    def action_view_html_report(self):
+        """Abrir el reporte en formato HTML en una nueva pestaña."""
+        self.ensure_one()
+        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+        report_url = f"{base_url}/report/html/l10n_ec_multiinvoice_payment.report_payment_receipt_extended/{self.id}"
+        return {
+            'type': 'ir.actions.act_url',
+            'url': report_url,
+            'target': 'new',
+        }
 
 
 class AccountPaymentInvoices(models.Model):
-    _name = 'account.payment.invoice'
+    _name = 'account.payment.invoice'    
     _description = 'Pagos de Facturas'
 
     invoice_id = fields.Many2one('account.move', string='Factura')

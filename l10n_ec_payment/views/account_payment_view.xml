@@ -1,20 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-    	<record id="account_payment_form_inherited" model="ir.ui.view">
-                <field name="name">account.payment.form.inherited</field>
-                <field name="model">account.payment</field>
-                <field name="inherit_id" ref="account.view_account_payment_form"/>
-                <field name="arch" type="xml">
-                  <xpath expr="//field[@name='journal_id']" position="before">
-                    <field name="type_mov"/>
-                    <!-- <field name="available_journal_ids"/> -->
-                  </xpath>
-                  <xpath expr="//field[@name='payment_method_line_id']" position="attributes">
-                    <attribute name="required">type_mov in ['current']</attribute>
-                  </xpath>
 
+        <!-- Vista modificada de account.payment -->
+        <record id="view_account_payment_form_ec" model="ir.ui.view">
+            <field name="name">account.payment.form.ec</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account.view_account_payment_form"/>
+            <field name="arch" type="xml">
+                
+                <field name="payment_type" position="attributes">
+                    <attribute name="readonly">1</attribute>
                 </field>
+
+                
+                                
+                <xpath expr="//field[@name='journal_id']" position="before">
+                    <field name="type_mov"/>
+                    <field name="payment_method_code"/>
+                    
+                    <field name="partner_type" invisible="1"/>
+                    <field name="available_advance_ids" invisible="1"/>
+                </xpath>
+                
+                <xpath expr="//field[@name='journal_id']" position="after">
+                    <field name="advance_id"
+                           domain="[('id', 'in', available_advance_ids)]"
+                           options="{'no_create': True, 'no_open': True}"
+                           invisible="type_mov != 'current' or not available_advance_ids"/>
+                </xpath>
+
+                <!-- Campo cheque_emitido_id con visibilidad y edición condicional -->
+                <xpath expr="//field[@name='payment_method_line_id']" position="after">
+                    <field name="cheque_emitido_id"
+                           domain="[('state', '=', 'new'), ('bank_account_id', '=', journal_id)]"
+                           options="{'no_create': True}"
+                           invisible="payment_method_code != 'check_printing'"
+                           readonly="state != 'draft'" />
+                </xpath>
+               
+                <xpath expr="//field[@name='memo']" position="replace">
+                    <field name="memo" string="Referencia"
+                        invisible="payment_method_code == 'check_printing'"
+                    />
+                 
+                </xpath>
+
+                <!-- Panel de información de cheque -->
+                <xpath expr="//group[@name='main_group']" position="after">
+                    <group string="Información del Cheque" invisible="cheque_emitido_id == False">
+                        <group>
+                            <field name="name_in_cheque" readonly="0" string="Nombre en Cheque"/>
+                            <field name="cheque_date" string="Fecha del Cheque"
+                            readonly="state != 'draft'" />
+                            <field name="cheque_date_efective" string="Fecha de Cobro"
+                                readonly="state != 'draft'" /> 
+                        </group>
+                        <group>
+                            <field name="check_amount_in_words"/>
+                            <field name="cheque_no" readonly="1" string="Número de Cheque"/>
+                            <field name="cheque_state" readonly="1" string="Estado del Cheque"/>
+                        </group>
+                    </group>
+                    <group string="Transferencia Bancaria" invisible="payment_method_code not in ('transf','bank_transfer')">
+                        <field name="transfer_number" readonly="state != 'draft'"/>
+                        <field name="transfer_date" readonly="state != 'draft'"/>
+                    </group>
+                    <group string="Pago con Tarjeta" invisible="payment_method_code not in ('card_credit','card_debit') or payment_type == 'outbound'">
+                        <field name="card_type" readonly="state != 'draft'"/>
+                        <field name="card_brand_id" readonly="state != 'draft'"/>
+                        <field name="card_deadline_id" invisible="payment_method_code != 'card_credit'" readonly="state != 'draft'"/>
+                    </group>
+
+
+                </xpath>
+
+                <!-- Página adicional con info de anticipo -->
+                <xpath expr="//notebook[@name='payment_notebook']" position="inside">
+                    <page string="Información Adicional" invisible="advance_id == False and cheque_emitido_id == False">
+                        <group invisible="advance_id == False">
+                            <field name="advance_available_amount" readonly="1" widget="monetary" string="Monto Disponible en Anticipo"/>
+                        </group>
+                    </page>
+                </xpath>
+
+                <!-- Botón para generar chequera -->
+                <xpath expr="//button[@name='action_post']" position="before">
+                    <button name="action_generate_checkbook"
+                            type="object"
+                            string="Generar Chequera"
+                            class="oe_highlight"
+                            invisible="payment_method_code != 'check_printing' or state != 'draft'"
+                            groups="account.group_account_manager"/>
+                </xpath>
+
+            </field>
         </record>
+
+
+        <record id="view_account_check_printing_payment_form_ec" model="ir.ui.view">
+            <field name="name">account.payment.form.ec</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account_check_printing.view_account_payment_form_inherited"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='check_amount_in_words']" position="replace"/>
+
+            </field>
+        </record>
+
+
     </data>
 </odoo>

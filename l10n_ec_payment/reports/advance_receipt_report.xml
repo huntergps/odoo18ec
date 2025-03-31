@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="action_report_advance_receipt" model="ir.actions.report">
+            <field name="name">Recibo de Anticipo</field>
+            <field name="model">account.advance</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">l10n_ec_payment.report_advance_receipt</field>
+            <field name="report_file">l10n_ec_payment.report_advance_receipt</field>
+            <field name="binding_model_id" ref="model_account_advance"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <template id="report_advance_receipt">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <h2 class="text-center">Recibo de Anticipo</h2>
+                            <div class="row mt32 mb32">
+                                <div class="col-6">
+                                    <strong>Número:</strong> <span t-field="o.name"/>
+                                    <br/>
+                                    <strong>Fecha:</strong> <span t-field="o.date"/>
+                                    <br/>
+                                    <t t-if="o.partner_type == 'customer'">
+                                        <strong>Cliente:</strong> <span t-field="o.partner_id"/>
+                                    </t>
+                                    <t t-else="">
+                                        <strong>Proveedor:</strong> <span t-field="o.partner_id"/>
+                                    </t>
+                                    <br/>
+                                    <strong>Cajero:</strong> <span t-field="o.cashier_id"/>
+                                    <br/>
+                                    <strong>Monto Total:</strong> <span t-field="o.amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                </div>
+                                <div class="col-6">
+                                    <strong>Fecha Estimada:</strong> <span t-field="o.date_estimated"/>
+                                    <br/>
+                                    <strong>Referencia:</strong> <span t-field="o.reference"/>
+                                </div>
+                            </div>
+\                      
+                            <h4>Formas de Pago</h4>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Método</th>
+                                        <th>Diario</th>
+                                        <th>Referencia</th>
+                                        <th>Fecha</th>
+                                        <th class="text-right">Monto</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="o.advance_line_ids" t-as="pm">
+                                        <td><span t-field="pm.advance_method_line_id"/></td>
+                                        <td><span t-field="pm.journal_id.name"/></td>
+                                        <td><span t-field="pm.nro_document"/></td>
+
+                                        <td><span t-field="pm.date_document"/></td>
+                                        <td class="text-right">
+                                            <span t-field="pm.amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="4" class="text-right">Total</td>
+                                        <td class="text-right">
+                                            <strong>
+                                                <span t-field="o.amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+
+                            <div class="row mt-5">
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <p>_________________________</p>
+                                        <p>Firma Cliente</p>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <p>_________________________</p>
+                                        <p>Firma Cajero</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>

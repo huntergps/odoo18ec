@@ -25,15 +25,16 @@
         'l10n_ec_reports',
         'l10n_ec_reports_ats',
         'sale',
-        'purchase'
+        'purchase',
+        'l10n_ec_base'
     ],
     'data': [
+        'security/account_security.xml',
+        'security/ir.model.access.csv',
         'data/account_payment_method_data.xml',
         'data/account_credit_card_brand_data.xml',
         'data/account_credit_card_deadline_data.xml',
         'data/ir_sequence.xml',
-        'security/account_security.xml',
-        'security/ir.model.access.csv',
         'views/account_payment_view.xml',
         'views/account_journal_view.xml',
         'views/account_advance_view.xml',
@@ -41,9 +42,21 @@
         'views/account_menuitem.xml',
         'views/account_credit_card_brand_view.xml',
         'views/account_credit_card_deadline_view.xml',
-        'views/res_config_settings_views.xml'
-
+        'views/cheque_emitido.xml',
+        'views/cheque_recibido.xml',
+        'views/caja_chica_view.xml',
+        'views/caja_chica_view_reposicion.xml',
+        'views/card_lote.xml',
+        'views/res_config_settings_views.xml',
+        'reports/advance_receipt_report.xml',
+        'wizard/chequera/recibir_chequera.xml',
+        'wizard/estados/cancelar_cheque_emitido.xml',
+        'wizard/estados/cobrar_cheque_emitido.xml',
+        'wizard/estados/devolver_cheque_emitido.xml',
+        'wizard/estados/entregar_cheque_emitido.xml',
+        'wizard/estados/perder_cheque_emitido.xml',
     ],
     'installable': True,
+    'application': True,
     'post_init_hook': '_initialize_journals',
 }

@@ -8,10 +8,7 @@
                 <field name="arch" type="xml">
                     <xpath expr='//sheet' position="inside">
                       <field name="invoice_type" invisible="1"/>
-                      <field name="type_mov" invisible="1"/>
-                    	<!-- <separator string="Detalles"/>
-                      <field name ="reconciled_bill_ids" /> -->
-                      
+                      <field name="type_mov" invisible="1"/>     
                     	<separator string="Facturas" invisible="type_mov not in ['current']"/>
                         <field name="payment_invoice_ids"
                             invisible="type_mov not in ['current']"
@@ -41,6 +38,20 @@
 
                     </xpath>
                 </field>
+        </record>
+        
+        <record id="view_account_payment_form_inherit" model="ir.ui.view">
+            <field name="name">account.payment.form.inherit.multi.invoice</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account.view_account_payment_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//header" position="inside">
+                    <button name="action_view_html_report" type="object" 
+                            string="Ver Reporte HTML" 
+                            invisible="state not in ['in_process', 'draft']" 
+                            class="oe_highlight"/>
+                </xpath>
+            </field>
         </record>
     </data>
 </odoo>

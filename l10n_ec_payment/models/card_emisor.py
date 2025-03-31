@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo import api, fields, models
+from odoo.exceptions import ValidationError
 
 
 
@@ -13,7 +14,13 @@ class CreditCardBrand(models.Model):
     credit = fields.Boolean(string="Tarjetas de Crédito")
     debit = fields.Boolean(string="Tarjetas de Débito")
 
-    _sql_constraints = [('name_uniq', 'unique (name)', 'El nombre de la marca de la tarjeta debe ser único. !')]
+    @api.constrains("name")
+    def _check_unique_name(self):
+        """Verifica que el nombre de la tarjeta de crédito sea único"""
+        for record in self:
+            if self.search_count([("name", "=", record.name), ("id", "!=", record.id)]) > 0:
+                raise ValidationError("El nombre de la marca de la tarjeta debe ser único.")
+
 
 
 class CreditCardDeadLine(models.Model):
@@ -30,7 +37,12 @@ class CreditCardDeadLine(models.Model):
     credit = fields.Boolean(string="Tarjetas de Crédito")
     debit = fields.Boolean(string="Tarjetas de Débito")
 
-    _sql_constraints = [('name_uniq', 'unique (name)', 'El nombre de la marca de la tarjeta debe ser único. !')]
+    @api.constrains("name")
+    def _check_unique_name(self):
+        """Verifica que el nombre del plazo de tarjeta sea único"""
+        for record in self:
+            if self.search_count([("name", "=", record.name), ("id", "!=", record.id)]) > 0:
+                raise ValidationError("El nombre del plazo de la tarjeta debe ser único.")
 
 
 
@@ -40,4 +52,10 @@ class ReturnReason(models.Model):
 
     name = fields.Char(string='Reason', required=True)
     comment_required = fields.Boolean(string="Comentarios Required ?")
-    _sql_constraints = [('name_uniq', 'unique (name)', 'The reason must be unique !')]
+    
+    @api.constrains("name")
+    def _check_unique_name(self):
+        """Verifica que el motivo de devolución sea único"""
+        for record in self:
+            if self.search_count([("name", "=", record.name), ("id", "!=", record.id)]) > 0:
+                raise ValidationError("El motivo de devolución debe ser único.")

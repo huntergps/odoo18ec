@@ -1,4 +1,5 @@
 from . import models
+from . import wizard
 
 from odoo import api, SUPERUSER_ID
 
@@ -6,7 +7,7 @@ def _initialize_journals(env):
     company = env.user.company_id
 
 
-    journals_data1 = [
+    journals_data = [
         {'name': 'Bco Pichincha cta cte 2100136006', 'type': 'bank', 'code': 'BPICH'},
         {'name': 'Valoración del inventario', 'type': 'general', 'code': 'INVEN'},
         {'name': 'Anticipos de Clientes', 'type': 'general', 'code': 'ADV_O'},
@@ -56,11 +57,11 @@ def _initialize_journals(env):
         {'name': 'Baja cartera antigua incobrable', 'type': 'general', 'code': 'BCIN'},
     ]
 
-    # for journal_data in journals_data:
-    #     if not env['account.journal'].search([('code', '=', journal_data['code']), ('company_id', '=', company.id)]):
-    #         env['account.journal'].create({
-    #             'name': journal_data['name'],
-    #             'type': journal_data['type'],
-    #             'code': journal_data['code'],
-    #             'company_id': company.id,
-    #         })
+    for journal_data in journals_data:
+        if not env['account.journal'].search([('code', '=', journal_data['code']), ('company_id', '=', company.id)]):
+            env['account.journal'].create({
+                'name': journal_data['name'],
+                'type': journal_data['type'],
+                'code': journal_data['code'],
+                'company_id': company.id,
+            })

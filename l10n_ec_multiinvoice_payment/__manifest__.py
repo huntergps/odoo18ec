@@ -20,7 +20,8 @@
     ],
     'data': [
         'security/ir.model.access.csv',
-        'views/account_payment_views.xml'
+        'views/account_payment_views.xml',
+        'reports/report_payment_receipt_templates.xml',
     ],
     'demo': [],
     'installable': True,

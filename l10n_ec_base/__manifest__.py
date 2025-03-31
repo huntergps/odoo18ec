@@ -33,6 +33,7 @@
         'views/partner_view.xml',
         'views/stock_picking.xml',
         'views/res_users.xml',
+        'views/account_menuitem.xml',
     ],
     'assets': {
         'web._assets_primary_variables': [

@@ -1,4 +1,4 @@
-from odoo import models, api, Command,fields, _
+from odoo import models, api, Command, fields, _
 
 
 class AccountJournal(models.Model):
@@ -14,6 +14,23 @@ class AccountJournal(models.Model):
         ('advance', 'Anticipo'),
         ('cross', 'Cruce de Cartera'),
     ], ondelete={'advance': 'set general', 'cross': 'set general'})
+
+    tiene_chequera = fields.Boolean(string='Tiene Chequera', default=False,
+                                   help="Marque esta opción si este diario bancario tiene chequera")
+
+    caja_chica = fields.Boolean('Es Caja Chica', default=False)
+    fondo_rendir = fields.Boolean('Es para Fondo a Rendir', default=False)
+
+    @api.onchange('caja_chica')
+    def onchange_caja_chica(self):
+        for rec in self:
+            rec.fondo_rendir=not(rec.caja_chica)
+
+    @api.onchange('fondo_rendir')
+    def onchange_fondo_rendir(self):
+        for rec in self:
+            rec.caja_chica=not(rec.fondo_rendir)
+
 
 
     def _get_default_account_domain(self):

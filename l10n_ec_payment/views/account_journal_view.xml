@@ -22,6 +22,13 @@
                             options="{'no_quick_create': True}"
                             groups="account.group_account_readonly"/>
                 </xpath>
+                <xpath expr="//field[@name='default_account_id']" position="after">
+                    <field name="tiene_chequera" invisible= "type != 'bank'"/>
+                    <field name="caja_chica" invisible= "type != 'cash'"/>
+                    <field name="fondo_rendir" invisible= "type != 'cash'"/>
+
+                </xpath>
+
                 <xpath expr="//field[@name='suspense_account_id']" position="replace">
 
                     <field name="suspense_account_id"
@@ -42,6 +49,7 @@
 
             </field>
         </record>
+
 
     </data>
 </odoo>

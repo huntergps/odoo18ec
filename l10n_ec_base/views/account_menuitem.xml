@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem name="Bancos y Efectivo"
+        id="menu_finance_bank_and_cash"
+        groups="account.group_account_user"
+        parent="account.menu_finance_entries"
+        sequence="15"
+        />
+
+    <menuitem name="Tarjetas de Crédito"
+        id="menu_tarjetas_credito"
+        groups="account.group_account_user"
+        parent="account.menu_finance_entries"
+        sequence="25"
+        />
+
+
+    <menuitem name="Caja Chica"
+        id="menu_finance_caja_chica"
+        groups="account.group_account_user"
+        parent="account.menu_finance_entries"
+        sequence="15"
+        />
+
+    <!-- <menuitem name="Cheques"
+        id="menu_finance_cheques"
+        parent="account.menu_finance_receivables"
+        sequence="10"/>    
+     -->
+    <!-- <menuitem name="Cheques"
+        id="menu_finance_cheques"
+        parent="menu_finance_bank_and_cash"
+        sequence="10"/> -->
+
+    <menuitem name="Conciliaciones"
+        id="menu_finance_conciliaciones"
+        parent="menu_finance_bank_and_cash"
+        sequence="20"/> <!-- Changed sequence from 10 to 20 to avoid conflict -->
+
+</odoo>

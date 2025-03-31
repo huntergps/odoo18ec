@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Vista de lista de cheques emitidos -->
+        <record model="ir.ui.view" id="cheque_emitido_tree">
+            <field name="name">cheque.emitido.tree</field>
+            <field name="model">cheque.emitido</field>
+            <field name="arch" type="xml">
+                <list string="Cheques" create='false' delete='false'
+                      decoration-info="state == 'draft'"
+                      decoration-muted="state == 'pending'">
+                    <header>
+                        <button name="action_generar_chequera" 
+                            class="btn btn-primary"
+                            groups="account.group_account_manager"
+                            string="Registrar Cheques" type="object" display="always"/>
+                    </header>
+                    <field name="name"/>
+                    <field name="name_in_cheque"/>
+                    <field name="partner_id"/>
+                    <field name="cheque_date_print"/>
+                    <field name="bank_account_id"/>
+                    <field name="cheque_date"/>
+                    <field name="cheque_date_efective" readonly="state in ('cleared', 'returned', 'cancelled', 'lost')"/>
+                    <field name="amount"/>
+                    <field name="comprobante_pago_ids" widget="many2many_tags" readonly="1"/>
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Vista de formulario de cheques emitidos -->
+        <record model="ir.ui.view" id="view_cheque_emitido_form">
+            <field name="name">cheque.emitido.form</field>
+            <field name="model">cheque.emitido</field>
+            <field name="arch" type="xml">
+                <form string="Cheque" create="false" delete='false'>
+                    <header>
+                        <button name="issue_cheque" string="Entregar" type="object" invisible="state != 'printed'"/>
+                        <button name="return_cheque" string="Devuelto" type="object" invisible="state not in ('issued', 'hold', 'pending')"/>
+                        <button name="lost_cheque" string="Perdido" type="object" groups="account.group_account_manager" invisible="state in ('used', 'printed', 'issued', 'hold', 'pending')"/>
+                        <button name="borrador_cheque" string="Poner en Borrador" type="object" groups="account.group_account_manager" invisible="state in ('cancelled', 'used')"/>
+                        <button name="cancel_cheque" string="Cancelar" type="object" groups="account.group_account_manager" invisible="state in ('new', 'used', 'printed', 'issued', 'hold', 'pending')"/>
+                        <field name="state" widget="statusbar" statusbar_visible="new,used,printed,issued,returned,cancelled,lost"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="cheque_no"/>
+                                <field name="bank_account_id" options="{'no_create': True}"/>
+                                <field name="partner_id" options="{'no_create': True}"/>
+                                <field name="name_in_cheque"/>
+                                <field name="amount" invisible="('state', '=', 'new')"/>
+                                <field name="receiver_name" invisible="('receiver_name','=',False)"/>
+                                <field name="designation" invisible="('designation','=',False)"/>
+                                <field name="phone" invisible="('phone','=',False)"/>
+                            </group>
+                            <group>
+                                <field name="cheque_date_issue" invisible="('cheque_date_issue','=',False)"/>
+                                <field name="hold_date" invisible="('hold_date','=',False)"/>
+                                <field name="cheque_date_efective" invisible="('cheque_date_efective','=',False)"/>
+                                <field name="cancel_date" invisible="('cancel_date','=',False)"/>
+                                <field name="return_date" invisible="('return_date','=',False)"/>
+                                <field name="lost_date" invisible="('lost_date','=',False)"/>
+                                <field name="cheque_date_print"/>
+                                <field name="cheque_date"/>
+                                <field name="comprobante_pago_ids" widget="many2many_tags" readonly="1"/>
+                            </group>
+                        </group>
+                        <separator string="Asientos"/>
+                        <field name="account_move_ids"/>
+                        <separator string="Comentarios"/>
+                        <field name="comment"/>
+                    </sheet>
+                    <div class="o_attachment_preview"/>
+                    <chatter/>                   
+                </form>
+            </field>
+        </record>
+
+        <!-- Vista de búsqueda de cheques emitidos -->
+        <record id="cheque_emitido_search" model="ir.ui.view">
+            <field name="name">cheque.emitido.search</field>
+            <field name="model">cheque.emitido</field>
+            <field name="arch" type="xml">
+                <search string="Cheques">
+                    <!-- Búsqueda Global -->
+                    <field name="cheque_no" string="Número de Cheque"
+                        filter_domain="['|', '|', '|', ('cheque_no', 'ilike', self), ('partner_id', 'ilike', self), ('bank_account_id', 'ilike', self), ('amount', 'ilike', self)]"/>
+                    <field name="partner_id" string="Entidad"/>
+                    <field name="bank_account_id" string="Cuenta Bancaria"/>
+                    <separator/>
+                    <filter string="Nuevo" name="nuevo" domain="[('state', '=', 'new')]"/>
+                    <filter string="Emitido y No Cobrado" name="enitido" domain="[('state', 'in', ['used', 'printed', 'issued'])]"/>
+                    <filter string="Cobrado" name="cobrado" domain="[('state', '=', 'cleared')]"/>
+                    <separator/>
+                    <filter string="Entidad" name="partner" domain="[]" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Cuenta Bancaria" name="Cuenta" domain="[]" context="{'group_by': 'bank_account_id'}"/>
+                    <filter string="Estado" domain="[]" name="Estado" context="{'group_by': 'state'}"/>
+                    <filter string="Fecha de Emisión" name="Fechae" domain="[]" context="{'group_by': 'cheque_date'}"/>
+                    <filter string="Fecha Efectiva" name="Fechaee" domain="[]" context="{'group_by': 'cheque_date_efective'}"/>
+                    <separator/>
+                </search>
+            </field>
+        </record>
+
+        <!-- Vista de gráfico de cheques emitidos -->
+        <record id="view_cheque_emitido_graph" model="ir.ui.view">
+            <field name="name">cheque.emitido.graph</field>
+            <field name="model">cheque.emitido</field>
+            <field name="arch" type="xml">
+                <graph string="Cheque Analysis" sample="1">
+                    <field name="partner_id"/>
+                    <field name="amount" type="measure"/>
+                </graph>
+            </field>
+        </record>
+
+        <!-- Vista de pivote de cheques emitidos -->
+        <record id="view_cheque_emitido_pivot" model="ir.ui.view">
+            <field name="name">cheque.emitido.pivot</field>
+            <field name="model">cheque.emitido</field>
+            <field name="arch" type="xml">
+                <pivot string="Cheques" default_order="cheque_date_efective asc">
+                    <field name="cheque_date_efective" interval="day" type="col"/>
+                    <field name="bank_account_id" type="row"/>
+                    <field name="partner_id" type="row"/>
+                    <field name="cheque_no"/>
+                    <field name="amount" type="measure"/>
+                    <field name="name" invisible="1"/>
+                    <field name="partner_bank_account_id" invisible="1"/>
+                    <field name="cheque_date_print" invisible="1"/>
+                    <field name="cheque_date" invisible="1"/>
+                    <field name="hold_date" invisible="1"/>
+                    <field name="return_date" invisible="1"/>
+                    <field name="lost_date" invisible="1"/>
+                    <field name="cancel_date" invisible="1"/>
+                    <field name="check_amount_in_words" invisible="1"/>
+                </pivot>
+            </field>
+        </record>
+
+        <!-- Acción de ventana para cheques emitidos -->
+        <record id="action_cheque_emitido" model="ir.actions.act_window">
+            <field name="name">Cheques Emitidos</field>
+            <field name="res_model">cheque.emitido</field>
+            <field name="view_mode">list,form</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'list', 'view_id': ref('cheque_emitido_tree')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('view_cheque_emitido_form')}),
+            ]"/>
+            <field name="context">{
+                "search_default_state_new": 1
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Registra un cheque emitido
+                </p>
+                <p>
+                    Los cheques emitidos representan pagos realizados a terceros. Puedes gestionar su estado desde esta vista.
+                </p>
+            </field>
+        </record>
+
+        <!-- Menú para cheques emitidos -->
+        <menuitem name="Cheques Emitidos" id="menu_action_cheque_emitido"
+            parent="l10n_ec_base.menu_finance_bank_and_cash"
+            action="action_cheque_emitido"
+            sequence="32"
+        />
+
+        <!-- Acción de ventana para resumen de cheques emitidos -->
+        <record id="action_cheque_emitido_resumen" model="ir.actions.act_window">
+            <field name="name">Resumen de Cheques Emitidos</field>
+            <field name="res_model">cheque.emitido</field>
+            <field name="view_mode">pivot</field>
+            <field name="view_id" ref="view_cheque_emitido_pivot"/>
+            <field name="context">{
+                "search_default_state_used": 1
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Consulta el resumen de cheques emitidos
+                </p>
+                <p>
+                    Aquí puedes analizar los cheques emitidos agrupados por diferentes criterios para mejor gestión financiera.
+                </p>
+            </field>
+        </record>
+
+        <!-- Menú para resumen de cheques emitidos -->
+        <menuitem name="Resumen de Cheques Emitidos" id="menu_action_cheque_emitido_resumen"
+            parent="l10n_ec_base.menu_finance_bank_and_cash"
+            action="action_cheque_emitido_resumen"
+            sequence="32"
+        />
+    </data>
+</odoo>

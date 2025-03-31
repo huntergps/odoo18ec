@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+     <!--  Lote Recibidos Kanban View -->
+        <record model="ir.ui.view" id="lote_recibidos_kanban_view">
+            <field name="name">account.card.lote.kanban</field>
+            <field name="model">account.card.lote</field>
+            <field name="type">kanban</field>
+            <field name="arch" type="xml">
+                <kanban class="o_kanban_mobile" create="false">
+                    <field name="name"/>
+                    <!-- <field name="numero_lote"/> -->
+                    <field name="journal_id"/>
+                    <field name="date"/>
+                    <field name="amount"/>
+                    <field name="state"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <strong><span><t t-esc="record.name.value"/></span></strong>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <strong><span class="pull-right text-right">
+                                            <field name="state" widget="kanban_label_selection" options="{'classes': {'received': 'default',
+                                            'pending': 'warning',
+                                            'cleared': 'success',
+                                            'rejected': 'danger',
+                                            'returned': 'danger'}}"/>
+                                        </span></strong>
+                                    </div>
+                                </div>
+                                <div class="row text-muted">
+                                    <div class="col-xs-6">
+                                        <span><t t-esc="record.tipo_tarjeta_id.value"/></span>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <span class="pull-right text-right"><t t-esc="record.date.value and record.date.value.split(' ')[0] or False"/></span>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                    </div>
+                                    <div class="col-xs-6 pull-right text-right">
+                                        <strong><field name="amount"/></strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record id="lote_recibidos_master_calendar" model="ir.ui.view">
+            <field name="name">account.card.lote.calendar</field>
+            <field name="model">account.card.lote</field>
+            <field name="arch" type="xml">
+                <calendar string="Lotes" color="state" date_start="date">
+                    <field name="journal_id"/>
+                    <field name="amount"/>
+                </calendar>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="lote_recibidos_master_graph">
+            <field name="name">account.card.lote.graph</field>
+            <field name="model">account.card.lote</field>
+            <field name="arch" type="xml">
+                <graph string="Analisis de Lotes">
+                    <field name="journal_id"/>
+                    <field name="amount" type="measure"/>
+                </graph>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="lote_recibidos_master_pivot">
+            <field name="name">account.card.lote.pivot</field>
+            <field name="model">account.card.lote</field>
+            <field name="arch" type="xml">
+                <pivot string="Lotes">
+                    <field name="name" type="row"/>
+                    <field name="amount" type="measure"/>
+
+                </pivot>
+            </field>
+        </record>
+
+     <!--  Lote Recibidos Form View -->
+        <record model="ir.ui.view" id="lote_recibidos_form">
+            <field name="name">account.card.lote.form</field>
+            <field name="model">account.card.lote</field>
+            <field name="arch" type="xml">
+                <form string="Lote" create="false" delete='false'>
+                    <header>
+                        <button name="action_cerrar" 
+                            invisible="state not in ('open','pending')"
+                            class="btn-primary"
+                            string="Cerrar Lote" type="object"/>
+                        <field name="state" widget="statusbar" />
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+
+                                <field name="name" readonly="state != 'open'" />
+                            </h1>
+                        </div>
+
+                     <group>
+                         <group>
+                           <field name="id" readonly="1" />
+                           <field name="numero_lote" readonly="1"/>
+
+                           <button name="obtener_nro_lote"
+                               class="btn-primary"
+                               string="Nro Lote" type="object"/>
+
+                            <field name="journal_id" options="{'no_create': True}"
+                                readonly="state != 'open'"
+                                domain="[('type', '=', 'customer_ccard')]"  />
+                            <field name="amount" readonly="1"/>
+                            <field name="liquidado" readonly="1"/>
+                            <field name="saldo" readonly="1"/>
+
+                         </group>
+                         <group>
+                            <field name="date" 
+                            readonly="state != 'open'"/>
+                            <field name="cerrado_en_pos"
+                            readonly="state != 'open'"/>
+                            <field name="start_at"
+                            invisible="start_at == False"/>
+                            <field name="stop_at" 
+                            invisible="start_at == False"/>
+                        </group>
+                    </group>
+                    <notebook>
+                      <page id ="recibos" string="Recibos" >
+                      </page>
+                    </notebook>
+                    <separator string="Comentarios"/>
+                    <field name="comment"/>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+    <!--  Lote Recibidos Form View -->
+       <record model="ir.ui.view" id="lote_recibidos_form_crear">
+           <field name="name">account.card.lote.form.crear</field>
+           <field name="model">account.card.lote</field>
+           <field name="arch" type="xml">
+               <form string="Lote de Vales" create="false" delete='false' style="width:100px" >
+                   <sheet>
+                       <div class="oe_title">
+                           <h1>
+                               <field name="name" />
+                           </h1>
+                       </div>
+
+                    <group>
+                        <group>
+                           <field name="journal_id" options="{'no_create': True}"
+                               domain="[('type', '=', 'customer_ccard')]"
+                               />
+                        </group>
+                        <group>
+                            <field name="date"/>
+                       </group>
+                   </group>
+                   <separator string="Comentarios"/>
+                   <field name="comment"/>
+                   </sheet>
+               </form>
+           </field>
+       </record>
+
+
+        <!--  Lote Recibidos Tree View -->
+        <record model="ir.ui.view" id="lote_recibidos_tree">
+            <field name="name">account.card.lote.tree</field>
+            <field name="model">account.card.lote</field>
+            <field name="arch" type="xml">
+                <list string="Lotes Recibidos"  create="true" delete='true' decoration-danger="abs(saldo) > 0.01" >
+
+                  <field name="numero_lote" string="Nro de Lote Unico"/>
+                  <field name="name"/>
+                    <field name="journal_id"/>
+                    <field name="date"/>
+                    <field name="amount"/>
+                    <field name="liquidado"/>
+                    <field name="saldo"/>
+                    <field name="recibos_count" string="Nro de Vales"/>
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+
+        <!--  Lote Recibidos Search View -->
+        <record model="ir.ui.view" id="lote_recibidos_search">
+            <field name="name">account.card.lote.search</field>
+            <field name="model">account.card.lote</field>
+            <field name="arch" type="xml">
+                <search string="Lotes">
+                    <field name="name"/>
+                    <field name="journal_id"/>
+                    <separator/>
+                    <filter name="open" string="Abiertos" domain="[('state', '=', 'open')]"/>
+                    <filter name="close" string="Cerrados" domain="[('state', '=', 'close')]"/>
+                </search>
+            </field>
+        </record>
+
+
+        <record id="action_lotes_recibidos" model="ir.actions.act_window">
+            <field name="name">Lotes Recibidos</field>
+            <field name="res_model">account.card.lote</field>
+            <field name="view_mode">list,kanban,form,pivot,calendar,graph</field>
+            <field name="view_id" ref="lote_recibidos_tree"/>
+            <field name="context">{
+                    'search_default_open':1,
+                    }</field>
+            <field name="search_view_id" ref="lote_recibidos_search"/>
+            <field name="help" type="html">
+                <p>
+                  Listado de Lotes recibidos de los Tipos de Tarjetas
+                </p>
+            </field>
+        </record>
+
+        <menuitem name="Lotes RECAP" id="menu_action_lotes_recibidos"
+            parent="l10n_ec_base.menu_tarjetas_credito" 
+            sequence="2"
+            action="action_lotes_recibidos"/>
+
+
+
+    </data>
+</odoo>

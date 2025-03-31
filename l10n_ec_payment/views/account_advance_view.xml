@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-
-        <!-- VIEWS -->
-
+        <!-- TREE VIEWS -->
         <record id="view_account_advance_tree" model="ir.ui.view">
             <field name="name">account.advance.list</field>
             <field name="model">account.advance</field>
@@ -13,20 +11,15 @@
                         <button name="action_post" type="object" string="Confirm"/>
                     </header>
                     <field name="company_currency_id" column_invisible="True"/>
-                    <!-- <field name="suitable_journal_ids" column_invisible="True"/> -->
-                    <field name="available_advance_method_line_ids" column_invisible="True"/>
-                    <field name="date" readonly="state in ['cancel', 'in_process']"/>
+                    <field name="date" readonly="state in ['cancel', 'posted']"/>
                     <field name="name"/>
-                    <field name="journal_id"/>
                     <field name="company_id" optional="hide" groups="base.group_multi_company"/>
-                    <field name="advance_method_line_id" context="{'hide_advance_journal_id': 1}"/>
                     <field name="partner_id" string="Customer"/>
                     <field name="amount_signed" string="Amount in Currency" optional="hide" groups="!base.group_multi_currency"/>
                     <field name="amount_signed" string="Amount in Currency" optional="show" groups="base.group_multi_currency"/>
                     <field name="currency_id" string="Advance Currency" optional="hide"/>
                     <field name="activity_ids" widget="list_activity" optional="hide"/>
-                    <field name="amount_company_currency_signed" widget="monetary" string="Amount" sum="Total"/>
-                    <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'in_process'"/>
+                    <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'posted'"/>
                 </list>
             </field>
         </record>
@@ -55,6 +48,7 @@
             </field>
         </record>
 
+        <!-- KANBAN VIEW -->
         <record id="view_account_advance_kanban" model="ir.ui.view">
             <field name="name">account.advance.kanban</field>
             <field name="model">account.advance</field>
@@ -86,6 +80,7 @@
             </field>
         </record>
 
+        <!-- SEARCH VIEW -->
         <record id="view_account_advance_search" model="ir.ui.view">
             <field name="name">account.advance.search</field>
             <field name="model">account.advance</field>
@@ -94,7 +89,6 @@
                     <field name="name" string="Advance"
                         filter_domain="['|', '|', '|', '|', ('name', 'ilike', self), ('partner_id', 'ilike', self), ('nro_document', 'ilike', self), ('amount_company_currency_signed' , 'ilike', self), ('amount', 'ilike', self)]"/>
                     <field name="partner_id" string="Customer/Vendor"/>
-                    <field name="journal_id"/>
                     <separator/>
                     <filter string="Customer Advances"
                             name="inbound_filter"
@@ -105,16 +99,11 @@
                     <separator/>
                     <filter string="Draft" name="state_draft" domain="[('state', '=', 'draft')]"/>
                     <filter string="In Process" name="state_in_process" domain="[('state', '=', 'in_process')]"/>
-                    <separator/>
-                    <filter string="Sent" name="state_sent" domain="[('is_sent', '=', 'True')]"/>
-                    <filter string="Not Sent" name="state_sent" domain="[('is_sent', '=', 'False')]"/>
-                    <separator/>
+                    <filter string="Procesado" name="state_posted" domain="[('state', '=', 'posted')]"/>
                     <filter string="Advance Date" name="date" date="date"/>
                     <separator/>
                     <field name="company_id" groups="base.group_multi_company"/>
                     <filter string="Partner" name="partner" domain="[]" context="{'group_by': 'partner_id'}"/>
-                    <filter string="Journal" name="journal" domain="[]" context="{'group_by': 'journal_id'}"/>
-                    <filter string="Advance Method Line" name="advancemethodline" domain="[]" context="{'group_by': 'advance_method_line_id'}"/>
                     <filter string="Status" name="state" domain="[]" context="{'group_by': 'state'}"/>
                     <filter string="Advance Date" name="groupby_date" domain="[]" context="{'group_by': 'date'}"/>
                     <filter string="Currency" name="currency" domain="[]" context="{'group_by': 'currency_id'}" groups="base.group_multi_currency"/>
@@ -131,6 +120,7 @@
             </field>
         </record>
 
+        <!-- FORM VIEW -->
         <record id="view_account_advance_form" model="ir.ui.view">
             <field name="name">account.advance.form</field>
             <field name="model">account.advance</field>
@@ -142,49 +132,36 @@
                         <button name="action_validate" string="Validar" type="object" class="oe_highlight"
                                 invisible="state != 'in_process'" data-hotkey="q"/>
                         <button name="action_reject" string="Reject" type="object" class="oe_highlight"
-                                invisible="state != 'in_process' or not is_sent" data-hotkey="q"/>
+                                invisible="state != 'posted' " data-hotkey="q"/>
                         <button name="action_draft" string="Poner en Borrador" type="object" class="btn btn-secondary"
                                 invisible="state in ('draft')"
                                 groups="account.group_account_invoice" data-hotkey="w"/>
                         <button name="action_cancel" string="Cancelar" type="object"
-                                invisible="not id or not (state == 'draft' or (state == 'in_process' and is_sent))" data-hotkey="x"/>
-
-                        <button name="mark_as_sent" string="Mark as Sent" type="object" data-hotkey="v"
-                                invisible="state != 'in_process' or is_sent or advance_method_code != 'manual'"/>
-                        <button name="unmark_as_sent" string="Unmark as Sent" type="object" data-hotkey="k"
-                                invisible="state != 'in_process' or not is_sent or advance_method_code != 'manual'"/>
-                        <field name="state" widget="statusbar" statusbar_visible="draft,in_process,paid"/>
+                                invisible="not id or not (state == 'draft' or (state == 'posted' ))" data-hotkey="x"/>
+                        <button name="action_print_receipt" string="Imprimir Recibo" type="object"
+                                class="btn btn-secondary" invisible="state == 'draft'" data-hotkey="p"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,posted"/>
                     </header>
 
                     <sheet>
                         <!-- Invisible fields -->
                         <field name="id" invisible="1"/>
-                        <field name="is_sent" invisible="1"/>
-                        <field name="advance_method_code" invisible="1"/>
-                        <field name="show_partner_bank_account" invisible="1"/>
-                        <field name="require_partner_bank_account" invisible="1"/>
-                        <field name="available_advance_method_line_ids" invisible="1"/>
-                        <field name="available_partner_bank_ids" invisible="1"/>
-                        <!-- <field name="suitable_journal_ids" invisible="1"/> -->
-                        <field name="country_code" invisible="1"/>
                         <field name="partner_type" invisible="1"/>
                         <field name="company_id" invisible="1"/>
-                        <field name="available_journal_ids" invisible="1"/>
                         <field name="currency_id" invisible="1"/>
 
                         <div class="oe_button_box" name="button_box">
-
-                            <!-- Journal Entry  button -->
-                            <button name="button_open_journal_entry"
+                            <!-- Journal Entry button -->
+                            <button name="button_open_journal_entries"
                                     type="object"
                                     class="oe_stat_button"
                                     icon="fa-bars"
-                                    invisible="not move_id"
+                                    invisible="move_count == 0"
                                     groups="account.group_account_user,account.group_account_readonly">
                                 <div class="o_stat_info">
                                     <span class="o_stat_text">Asientos</span>
                                 </div>
-                            </button>
+                            </button>                            
                         </div>
 
                         <widget name="web_ribbon" text="Invoicing App Legacy"
@@ -212,78 +189,118 @@
                                        readonly="state != 'draft'"/>
                                <field name="date" readonly="state != 'draft'"/>
                                <field name="date_estimated" readonly="state != 'draft'"/>
+                               <field name="cashier_id" readonly="state != 'draft'"/>
 
                               <label for="amount"/>
                               <div name="amount_div" class="o_row">
                                   <field name="amount"
-                                         readonly="state != 'draft'"/>
+                                         readonly="1"/>
                                   <field name="currency_id"
                                          options="{'no_create': True, 'no_open': True}"
                                          required="1"
-                                         readonly="state != 'draft'"
+                                         readonly="1"
                                          groups="base.group_multi_currency"/>
                               </div>
-
-
                             </group>
                             <group name="group2">
-                                <field name="journal_id"
-                                       domain="[('id', 'in', available_journal_ids)]"
-                                       readonly="state != 'draft'"/>
-                                <field name="advance_method_line_id"
-                                       context="{'hide_advance_journal_id': 1}"
-                                       options="{'no_create': True, 'no_open': True}"
-                                       required="1"
-                                       readonly="state != 'draft'"/>
-                                <field name="date_document"
-                                              readonly="state != 'draft'"/>
-                                <field name="nro_document"
-                                              readonly="state != 'draft'"/>
-
-
-                                <field name="partner_bank_id" string="Cuenta Bancaria del Cliente"
-                                      context="{'default_partner_id': partner_id, 'display_account_trust': True}"
-                                        invisible="not show_partner_bank_account or partner_type != 'customer' or advance_type == 'inbound'"
-                                        required="require_partner_bank_account"/>
-
-                                <field name="partner_bank_id" string="Cuenta Bancaria del Proveedor"
-                                        context="{'default_partner_id': partner_id, 'display_account_trust': True}"
-                                        invisible="not show_partner_bank_account or partner_type != 'supplier' or advance_type == 'inbound'"
-                                        required="require_partner_bank_account"/>
-
-                                <!-- This field should always be readonly but using readonly="1" overrides the other partner_bank_id
-                                fields readonly condition in the framework, preventing the modification of these fields -->
-                                <field name="partner_bank_id" string="Cuenta Bancaria"
-                                        context="{'default_partner_id': partner_id, 'display_account_trust': True}"
-                                        invisible="not show_partner_bank_account or advance_type == 'outbound'"
-                                        required="require_partner_bank_account"/>
-
+                                <field name="amount_used" readonly="1"/>
+                                <field name="amount_returned" readonly="1"/>
+                                <field name="amount_available" readonly="1"/>
                             </group>
-
                         </group>
+
                         <group>
+                            <field name="reference" placeholder="Descripción detallada y propósito del anticipo..."/>
+                            <notebook name="advance_notebook" colspan="2">
+                                <!-- Página de formas de pago -->
+                                <page id="payment_methods_page" string="Formas de Pago">
+                                    <field name="advance_line_ids" readonly="state != 'draft'">
+                                        <list>
+                                            <field name="advance_method_line_id"/>
+                                            <field name="journal_id" on_change="1"/>
+                                            <field name="amount" on_change="1" />
+                                            <field name="nro_document" on_change="1"/>
+                                            <field name="date_document" on_change="1"/>
+                                            <field name="advance_type"/>
+                                        </list>
+                                        <form>
+                                            <group name="main_groupP">
+                                                <group name="group1P">
+                                                    <field name="destination_account_id" invisible="1"/>
+                                                    <field name="origin_account_id" invisible="1"/>
 
-                          <field name="reference" />
+                                                    <field name="available_advance_method_line_ids" invisible="1"/>
+                                                    <field name="advance_type" widget="radio" options="{'horizontal': True}" invisible="1" readonly="state != 'draft'"/>
+                                                    <field name="partner_id" string="Cliente" options="{'no_quick_create': True}" invisible="partner_type != 'customer'" />
+                                                    <field name="partner_id" string="Proveedor" options="{'no_quick_create': True}" invisible="partner_type != 'supplier'" />
 
-                        <notebook name="advance_notebook" colspan="2">
-                          <page id="amount_tab"
-                                name="amount_tab"
-                                string="Detalles">
-                                <group>
-                                  <group>
-                                  <field name="amoount_used" readonly="1"/>
-                                  <field name="amoount_returned" readonly="1"/>
-                                </group>
-                                <group>
-                                  <field name="amoount_available" readonly="1"/>
-                                  <field name="destination_account_id" invisible="1"/>
-                                  <field name="origin_account_id" invisible="1"/>
-                                </group>
-                              </group>
-                                <field name="payment_ids" readonly="1"/>
-                          </page>
-                          </notebook>
+                                                    <label for="amount"/>
+                                                    <div name="amount_div" class="o_row">
+                                                        <field name="amount" readonly="state != 'draft'"/>
+                                                        <field name="currency_id" options="{'no_create': True, 'no_open': True}" required="1" readonly="state != 'draft'" groups="base.group_multi_currency"/>
+                                                    </div>
 
+                                                    <field name="card_brand_id" invisible="show_credit_card == False" required="require_credit_card"/>
+                                                    <field name="card_deadline_id"
+                                                        invisible="advance_method_code != 'card_credit'"
+                                                        required="advance_method_code == 'card_credit' and state == 'draft'"/>
+                                                </group>
+
+                                                <group name="group2P">
+                                                    <field name="available_journal_ids" invisible="1"/>
+                                                    <field name="journal_id" domain="[('id', 'in', available_journal_ids)]" readonly="state != 'draft'"/>
+                                                    <field name="advance_method_line_id" context="{'hide_advance_journal_id': 1}" options="{'no_create': True, 'no_open': True}" required="1" readonly="state != 'draft'"/>
+
+
+
+                                                    <field name="partner_bank_id" string="Cuenta Bancaria del Cliente"
+                                                        context="{'default_partner_id': partner_id, 'display_account_trust': True}"
+                                            invisible="not (partner_type == 'customer' and advance_type == 'inbound' and advance_method_code in ['deposit_cheque', 'transf'])"
+                                                        required="require_partner_bank_account"/>
+
+                                        <field name="partner_bank_id" string="Cuenta Bancaria del Proveedor"
+                                            context="{'default_partner_id': partner_id, 'display_account_trust': True}"
+                                            invisible="not (partner_type == 'supplier' and advance_type == 'outbound' and advance_method_code in ['check_printing', 'transf'])"
+                                            required="advance_method_code in ['check_printing', 'transf'] and state == 'draft'"/>
+
+
+                                                    <field name="date_document" string="Fecha del Cheque" readonly="state != 'draft'" invisible="advance_method_code not in ['check_printing', 'deposit_cheque']"/>
+                                                    <field name="date_document" string="Fecha de Transferencia" readonly="state != 'draft'" invisible="advance_method_code != 'transf'"/>
+                                                    <field name="date_document" string="Fecha del Voucher" readonly="state != 'draft'" invisible="advance_method_code not in ['card_credit', 'card_debit']"/>
+                                                    <field name="date_document" string="Fecha del Débito" readonly="state != 'draft'" invisible="advance_method_code != 'bank_debit'"/>
+
+                                                    <field name="nro_document" string="Número del Cheque" readonly="state != 'draft'" invisible="advance_method_code not in ['check_printing', 'deposit_cheque']"/>
+                                                    <field name="nro_document" string="Referencia de Transferencia" readonly="state != 'draft'" invisible="advance_method_code != 'transf'"/>
+                                                    <field name="nro_document" string="Número de Voucher" readonly="state != 'draft'" invisible="advance_method_code not in ['card_credit', 'card_debit']"/>
+                                                    <field name="nro_document" string="Referencia Débito Bancario" readonly="state != 'draft'" invisible="advance_method_code != 'bank_debit'"/>
+
+                                                    <field name="check_due_date" invisible="show_check_due_date == False" required="require_check_due_date" string="Fecha de Cobro"/>
+                                                </group>
+                                            </group>
+
+                                            <group>
+                                                <field name="advance_id" invisible="1"/>
+                                                <field name="state" invisible="1"/>
+                                                <field name="advance_method_code" invisible="0"/>
+                                                <field name="related_payment_type" invisible="0"/>
+                                                
+                                            </group>
+                                        </form>
+                                    </field>
+                                </page>
+
+                                <!-- Página de detalles -->
+                                <page id="move_tab"
+                                      name="move_tab"
+                                      string="Asientos">
+                                    <field name="move_ids" readonly="1"/>
+                                </page>   
+                                <page id="amount_tab"
+                                      name="amount_tab"
+                                      string="Pagos Aplicados">
+                                    <field name="payment_ids" readonly="1"/>
+                                </page>                                                           
+                            </notebook>
                         </group>
                     </sheet>
                     <div class="o_attachment_preview"/>
@@ -292,20 +309,20 @@
             </field>
         </record>
 
+        <!-- GRAPH VIEW -->
         <record id="view_account_advance_graph" model="ir.ui.view">
             <field name="name">account.advance.graph</field>
             <field name="model">account.advance</field>
             <field name="arch" type="xml">
                 <graph string="Invoices" sample="1">
                     <field name="advance_type"/>
-                    <field name="journal_id"/>
+                    <field name="partner_id"/>
                     <field name="amount" type="measure"/>
                 </graph>
             </field>
         </record>
 
         <!-- ACTIONS -->
-
         <record id="action_account_all_advances" model="ir.actions.act_window">
             <field name="name">Anticipos</field>
             <field name="res_model">account.advance</field>
@@ -356,50 +373,6 @@
         </record>
 
 
-        <!-- Action confirm_advances for multi -->
-        <record id="action_account_confirm_advances" model="ir.actions.server">
-            <field name="name">Validar Anticipos</field>
-            <field name="state">code</field>
-            <field name="groups_id" eval="[(4, ref('account.group_account_invoice'))]"/>
-            <field name="model_id" ref="l10n_ec_payment.model_account_advance"/>
-            <field name="binding_model_id" ref="l10n_ec_payment.model_account_advance"/>
-            <field name="binding_view_types">list</field>
-            <field name="code">
-                records.action_post()
-            </field>
-        </record>
     </data>
-    <!-- <data noupdate="1">
-        <record id="account_send_advance_receipt_by_email_action" model="ir.actions.act_window">
-            <field name="name">Send receipt by email</field>
-            <field name="res_model">mail.compose.message</field>
-            <field name="view_mode">form</field>
-            <field name="target">new</field>
-            <field name="context" eval="{
-                'mail_post_autofollow': True,
-                'default_composition_mode': 'comment',
-                'default_template_id': ref('account.mail_template_data_advance_receipt'),
-                'default_email_layout_xmlid': 'mail.mail_notification_light',
-            }"/>
-            <field name="binding_model_id" ref="model_account_advance"/>
-            <field name="binding_view_types">form</field>
-            <field name="groups_id" eval="[(4, ref('account.group_account_invoice'))]"/>
-        </record>
-
-        <record id="account_send_advance_receipt_by_email_action_multi" model="ir.actions.act_window">
-            <field name="name">Send receipts by email</field>
-            <field name="res_model">mail.compose.message</field>
-            <field name="view_mode">form</field>
-            <field name="target">new</field>
-            <field name="context" eval="{
-                'mailing_document_based': True,
-                'mail_post_autofollow': True,
-                'default_composition_mode': 'mass_mail',
-                'default_template_id': ref('account.mail_template_data_advance_receipt'),
-                'default_email_layout_xmlid': 'mail.mail_notification_light',
-            }"/>
-            <field name="binding_model_id" ref="model_account_advance"/>
-            <field name="binding_view_types">list</field>
-        </record>
-    </data> -->
+    
 </odoo>
